@@ -1,0 +1,203 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+/// ルート名の定数
+class AppRoutes {
+  AppRoutes._(); // プライベートコンストラクタ
+
+  static const String login = '/login';
+  static const String register = '/register';
+  static const String projectSelection = '/project-selection';
+  static const String taskBoard = '/';
+  static const String taskDetail = '/task/:id';
+  static const String taskCreate = '/task/create';
+  static const String admin = '/admin';
+}
+
+/// アプリケーション全体のルーティング設定
+///
+/// go_routerを使用して宣言的なルーティングを実現
+class AppRouter {
+  AppRouter._(); // プライベートコンストラクタ
+
+  /// GoRouterの設定
+  static GoRouter router({
+    required bool isAuthenticated,
+    required bool hasSelectedProject,
+  }) {
+    return GoRouter(
+      initialLocation: AppRoutes.login,
+      redirect: (context, state) {
+        final isLoggingIn = state.matchedLocation == AppRoutes.login;
+        final isRegistering = state.matchedLocation == AppRoutes.register;
+        final isSelectingProject =
+            state.matchedLocation == AppRoutes.projectSelection;
+
+        // 認証されていない場合
+        if (!isAuthenticated) {
+          if (isLoggingIn || isRegistering) {
+            return null; // ログイン・登録画面へのアクセスは許可
+          }
+          return AppRoutes.login; // それ以外はログイン画面へリダイレクト
+        }
+
+        // 認証されているが、プロジェクトが選択されていない場合
+        if (!hasSelectedProject) {
+          if (isSelectingProject) {
+            return null; // プロジェクト選択画面へのアクセスは許可
+          }
+          return AppRoutes.projectSelection; // プロジェクト選択画面へリダイレクト
+        }
+
+        // 認証済み＆プロジェクト選択済みの場合、ログイン画面にアクセスしようとしたら
+        if (isLoggingIn || isRegistering || isSelectingProject) {
+          return AppRoutes.taskBoard; // タスクボードへリダイレクト
+        }
+
+        return null; // それ以外はそのまま
+      },
+      routes: [
+        // ログイン画面
+        GoRoute(
+          path: AppRoutes.login,
+          name: 'login',
+          pageBuilder: (context, state) {
+            // TODO: LoginScreenを実装後に置き換え
+            return MaterialPage(
+              key: state.pageKey,
+              child: const Scaffold(
+                body: Center(child: Text('Login Screen - TODO')),
+              ),
+            );
+          },
+        ),
+
+        // 新規登録画面
+        GoRoute(
+          path: AppRoutes.register,
+          name: 'register',
+          pageBuilder: (context, state) {
+            // TODO: RegisterScreenを実装後に置き換え
+            return MaterialPage(
+              key: state.pageKey,
+              child: const Scaffold(
+                body: Center(child: Text('Register Screen - TODO')),
+              ),
+            );
+          },
+        ),
+
+        // プロジェクト選択画面
+        GoRoute(
+          path: AppRoutes.projectSelection,
+          name: 'projectSelection',
+          pageBuilder: (context, state) {
+            // TODO: ProjectSelectionScreenを実装後に置き換え
+            return MaterialPage(
+              key: state.pageKey,
+              child: const Scaffold(
+                body: Center(child: Text('Project Selection Screen - TODO')),
+              ),
+            );
+          },
+        ),
+
+        // タスクボード（メイン画面）
+        GoRoute(
+          path: AppRoutes.taskBoard,
+          name: 'taskBoard',
+          pageBuilder: (context, state) {
+            // TODO: TaskBoardScreenを実装後に置き換え
+            return MaterialPage(
+              key: state.pageKey,
+              child: const Scaffold(
+                body: Center(child: Text('Task Board Screen - TODO')),
+              ),
+            );
+          },
+          routes: [
+            // タスク詳細画面
+            GoRoute(
+              path: 'task/:id',
+              name: 'taskDetail',
+              pageBuilder: (context, state) {
+                final taskId = state.pathParameters['id']!;
+                // TODO: TaskDetailScreenを実装後に置き換え
+                return MaterialPage(
+                  key: state.pageKey,
+                  child: Scaffold(
+                    body: Center(
+                      child: Text(
+                        'Task Detail Screen - TODO\nTask ID: $taskId',
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            // タスク作成画面
+            GoRoute(
+              path: 'task/create',
+              name: 'taskCreate',
+              pageBuilder: (context, state) {
+                // TODO: TaskCreateScreenを実装後に置き換え
+                return MaterialPage(
+                  key: state.pageKey,
+                  child: const Scaffold(
+                    body: Center(child: Text('Task Create Screen - TODO')),
+                  ),
+                );
+              },
+            ),
+
+            // 管理者画面
+            GoRoute(
+              path: 'admin',
+              name: 'admin',
+              pageBuilder: (context, state) {
+                // TODO: AdminScreenを実装後に置き換え
+                // TODO: 管理者権限チェックを追加
+                return MaterialPage(
+                  key: state.pageKey,
+                  child: const Scaffold(
+                    body: Center(child: Text('Admin Screen - TODO')),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ],
+      errorBuilder: (context, state) {
+        return Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                const Text(
+                  '404 Not Found',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Path: ${state.matchedLocation}',
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    context.go(AppRoutes.taskBoard);
+                  },
+                  child: const Text('ホームに戻る'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
