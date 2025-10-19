@@ -47,8 +47,11 @@ app.*.map.json
 # Custom directories
 Engineer-task-app/
 
-# Plan files (Cursor AI)
-*.plan.md
+# Plan files
+*_PLAN.md
+
+# Implementation plan
+IMPLEMENTATION_PLAN.md
 
 # Environment variables
 .env
