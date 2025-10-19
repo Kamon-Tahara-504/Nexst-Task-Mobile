@@ -5,9 +5,9 @@
 本アプリは、既存のReact Webアプリ「Nexst Task」のモバイル版として開発されたタスク管理アプリケーションです！
 個人・グループ・チーム単位でのタスク管理を行い、**リキッドグラス（グラスモーフィズム）デザイン**を採用した美しく直感的なUIを提供します！
 
-## 🤝 MOBILE版プロジェクト体制
+## 💪 MOBILE版プロジェクト体制
 
-- **開発メンバー**: 1人
+- **開発メンバー**: 1人 😇
 - **開発者**: Kamon-Tahara-504
 - **MOBILE版開発開始日**: 2025/ 10/18
 - **リリース予定**: 未定
@@ -103,7 +103,7 @@ lib/
 │   │       └── providers/
 │   │           └── auth_state_provider.dart # 認証状態管理
 │   │
-│   ├── project/                            # 📁 プロジェクト機能
+│   ├── project/                            # プロジェクト機能
 │   │   ├── data/
 │   │   │   ├── models/
 │   │   │   │   ├── project_model.dart      # プロジェクトモデル
@@ -120,7 +120,7 @@ lib/
 │   │       └── providers/
 │   │           └── project_provider.dart   # プロジェクト状態管理
 │   │
-│   ├── task/                               # ✅ タスク機能
+│   ├── task/                               # タスク機能
 │   │   ├── data/
 │   │   │   ├── models/
 │   │   │   │   └── task_model.dart         # タスクモデル
@@ -146,7 +146,7 @@ lib/
 │   │           ├── task_provider.dart      # タスク状態管理
 │   │           └── task_filter_provider.dart # フィルタ管理
 │   │
-│   └── admin/                              # 👑 管理者機能
+│   └── admin/                              # 管理者機能
 │       ├── data/
 │       │   └── repositories/
 │       │       └── admin_repository.dart   # 管理者リポジトリ
@@ -179,21 +179,21 @@ lib/
 
 ### アーキテクチャの特徴
 
-#### 📦 Feature-based Architecture
+#### Feature-based Architecture
 各機能（auth, project, task, admin）が独立したモジュールとして存在し、以下の3層構造を持ちます：
 
 - **data/**: データソース、モデル、リポジトリ
 - **domain/**: ビジネスロジック、Enum定義
 - **presentation/**: UI（Screen、Widget、Provider）
 
-#### 🎯 メリット
+#### メリット
 1. **保守性向上**: 機能ごとにコードが分離され、変更の影響範囲が明確
 2. **スケーラビリティ**: 新機能の追加が容易
 3. **チーム開発**: 機能ごとに担当を分けやすい
 4. **テスト**: 機能単位でのテストが書きやすい
 5. **削除が簡単**: 不要な機能をフォルダごと削除可能
 
-## 🎨 デザインシステム
+## デザインシステム
 
 ### リキッドグラス（グラスモーフィズム）デザイン
 
@@ -229,7 +229,7 @@ Priority.low:    Color(0xFF10B981)  // 緑
 4日以上: 緑系（bg-green-100, text-green-800）
 ```
 
-## 🗄️ データベース設計（Supabase）
+## データベース設計（Supabase）
 
 ### テーブル構成
 
@@ -284,7 +284,7 @@ Priority.low:    Color(0xFF10B981)  // 緑
 | created_at     | timestamptz | 作成日時               |
 | updated_at     | timestamptz | 更新日時               |
 
-## 🚀 セットアップ手順
+## セットアップ手順
 
 ### 前提条件
 - Flutter SDK 3.9.2+
@@ -414,7 +414,7 @@ final xxxStreamProvider = StreamProvider<T>((ref) => ...);
 final xxxNotifierProvider = StateNotifierProvider<Notifier, State>((ref) => ...);
 ```
 
-## 🧪 テスト
+## テスト
 
 ```bash
 # 単体テスト実行
@@ -427,7 +427,7 @@ flutter test --coverage
 flutter test integration_test/
 ```
 
-## 📦 ビルド
+## ビルド
 
 ### Android APK
 ```bash
@@ -439,6 +439,6 @@ flutter build apk --release
 flutter build ios --release
 ```
 
-## 📄 ライセンス
+## ライセンス
 
 © 2025 Nexst Task. 毎日を everyday に.
