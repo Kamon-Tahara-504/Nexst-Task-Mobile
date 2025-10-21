@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/project/presentation/screens/project_selection_screen.dart';
 
 /// ルート名の定数
 class AppRoutes {
@@ -62,13 +65,7 @@ class AppRouter {
           path: AppRoutes.login,
           name: 'login',
           pageBuilder: (context, state) {
-            // TODO: LoginScreenを実装後に置き換え
-            return MaterialPage(
-              key: state.pageKey,
-              child: const Scaffold(
-                body: Center(child: Text('Login Screen - TODO')),
-              ),
-            );
+            return MaterialPage(key: state.pageKey, child: const LoginScreen());
           },
         ),
 
@@ -77,12 +74,9 @@ class AppRouter {
           path: AppRoutes.register,
           name: 'register',
           pageBuilder: (context, state) {
-            // TODO: RegisterScreenを実装後に置き換え
             return MaterialPage(
               key: state.pageKey,
-              child: const Scaffold(
-                body: Center(child: Text('Register Screen - TODO')),
-              ),
+              child: const RegisterScreen(),
             );
           },
         ),
@@ -92,12 +86,9 @@ class AppRouter {
           path: AppRoutes.projectSelection,
           name: 'projectSelection',
           pageBuilder: (context, state) {
-            // TODO: ProjectSelectionScreenを実装後に置き換え
             return MaterialPage(
               key: state.pageKey,
-              child: const Scaffold(
-                body: Center(child: Text('Project Selection Screen - TODO')),
-              ),
+              child: const ProjectSelectionScreen(),
             );
           },
         ),
