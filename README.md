@@ -284,50 +284,6 @@ Priority.low:    Color(0xFF10B981)  // 緑
 | created_at     | timestamptz | 作成日時               |
 | updated_at     | timestamptz | 更新日時               |
 
-## セットアップ手順
-
-### 前提条件
-- Flutter SDK 3.9.2+
-- Dart SDK 3.9.2+
-- Xcode（iOS開発の場合）
-- Android Studio（Android開発の場合）
-- Supabaseプロジェクト
-
-### 1. リポジトリのクローン
-```bash
-git clone <repository-url>
-cd Nexst-Task-Mobile
-```
-
-### 2. 依存パッケージのインストール
-```bash
-flutter pub get
-```
-
-### 3. 環境変数の設定
-プロジェクトルートに `.env` ファイルを作成：
-
-```env
-SUPABASE_URL=https://your-project-id.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-```
-
-### 4. アイコンのコピー
-Web版の `public/icons/` から SVG アイコンをコピー：
-
-```bash
-cp -r ../Engineer-Task-APP1/public/icons/*.svg assets/icons/
-```
-
-### 5. アプリの起動
-```bash
-# iOS シミュレーターで起動
-flutter run -d ios
-
-# Android エミュレーターで起動
-flutter run -d android
-
-```
 
 ## 📱 機能一覧
 
