@@ -42,7 +42,6 @@ class TaskBoardScreen extends ConsumerWidget {
         drawer: AppDrawer(
           projectName: selectedProject?.name,
           userName: currentUser?.userName,
-          isAdmin: currentUser?.isAdmin ?? false,
           onLogout: () async {
             final logout = ref.read(logoutProvider);
             await logout();

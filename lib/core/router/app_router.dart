@@ -6,6 +6,7 @@ import '../../features/project/presentation/screens/project_selection_screen.dar
 import '../../features/task/presentation/screens/task_board_screen.dart';
 import '../../features/task/presentation/screens/task_create_screen.dart';
 import '../../features/task/presentation/screens/task_detail_screen.dart';
+import '../../features/admin/presentation/screens/admin_screen.dart';
 
 /// ルート名の定数
 class AppRoutes {
@@ -137,13 +138,9 @@ class AppRouter {
               path: 'admin',
               name: 'admin',
               pageBuilder: (context, state) {
-                // TODO: AdminScreenを実装後に置き換え
-                // TODO: 管理者権限チェックを追加
                 return MaterialPage(
                   key: state.pageKey,
-                  child: const Scaffold(
-                    body: Center(child: Text('Admin Screen - TODO')),
-                  ),
+                  child: const AdminScreen(),
                 );
               },
             ),

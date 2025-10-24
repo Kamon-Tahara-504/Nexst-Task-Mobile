@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/constants/app_sizes.dart';
 import 'liquid_glass_container.dart';
+import '../../features/auth/presentation/providers/auth_state_provider.dart';
+import '../../features/admin/presentation/providers/admin_auth_provider.dart';
 
 /// アプリケーションのDrawer（サイドバー）
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends ConsumerWidget {
   /// 現在のプロジェクト名
   final String? projectName;
 
   /// ユーザー名
   final String? userName;
-
-  /// ユーザーが管理者かどうか
-  final bool isAdmin;
 
   /// ログアウトコールバック
   final VoidCallback? onLogout;
@@ -25,13 +25,13 @@ class AppDrawer extends StatelessWidget {
     super.key,
     this.projectName,
     this.userName,
-    this.isAdmin = false,
     this.onLogout,
     this.onChangeProject,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAdmin = ref.watch(isAdminProvider);
     return Drawer(
       backgroundColor: AppColors.backgroundLight,
       child: SafeArea(
@@ -113,7 +113,7 @@ class AppDrawer extends StatelessWidget {
                       title: AppStrings.adminPage,
                       onTap: () {
                         Navigator.pop(context);
-                        // TODO: 管理者ページへ遷移
+                        Navigator.pushNamed(context, '/admin');
                       },
                     ),
                   ],
@@ -173,9 +173,9 @@ class AppDrawer extends StatelessWidget {
               Text(
                 AppStrings.appName,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
               ),
             ],
           ),
@@ -185,18 +185,18 @@ class AppDrawer extends StatelessWidget {
             const SizedBox(height: AppSizes.spaceSm),
             Text(
               projectName!,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
           ],
           if (userName != null) ...[
             const SizedBox(height: AppSizes.spaceXs),
             Text(
               userName!,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
             ),
           ],
         ],
@@ -249,9 +249,7 @@ class AppDrawer extends StatelessWidget {
         ),
       ),
       children: children,
-      tilePadding: const EdgeInsets.symmetric(
-        horizontal: AppSizes.padding,
-      ),
+      tilePadding: const EdgeInsets.symmetric(horizontal: AppSizes.padding),
       childrenPadding: const EdgeInsets.only(left: AppSizes.paddingLg),
     );
   }
@@ -271,9 +269,7 @@ class AppDrawer extends StatelessWidget {
         ),
       ),
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppSizes.padding,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.padding),
       dense: true,
     );
   }
@@ -285,12 +281,11 @@ class AppDrawer extends StatelessWidget {
       child: Text(
         AppStrings.copyright,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.textDisabled,
-              fontSize: AppSizes.fontXs,
-            ),
+          color: AppColors.textDisabled,
+          fontSize: AppSizes.fontXs,
+        ),
         textAlign: TextAlign.center,
       ),
     );
   }
 }
-
