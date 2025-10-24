@@ -12,7 +12,6 @@ import '../../domain/enums/task_category.dart';
 import '../../domain/enums/priority.dart';
 import '../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../../project/presentation/providers/project_provider.dart';
-import 'priority_badge.dart';
 
 /// タスク入力フォームWidget
 class TaskForm extends ConsumerStatefulWidget {
@@ -78,7 +77,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
   @override
   Widget build(BuildContext context) {
     final currentUser = ref.watch(currentUserProvider).value;
-    final selectedProject = ref.watch(selectedProjectProvider).value;
+    // final selectedProject = ref.watch(selectedProjectProvider).value;
 
     return LiquidGlassContainer(
       padding: const EdgeInsets.all(AppSizes.padding),
@@ -282,7 +281,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                   }
                 });
               },
-              selectedColor: AppColors.primary.withOpacity(0.3),
+              selectedColor: AppColors.primary.withValues(alpha: 0.2),
               checkmarkColor: AppColors.primary,
             );
           }).toList(),
@@ -301,15 +300,52 @@ class _TaskFormState extends ConsumerState<TaskForm> {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
-        IconSelector(
-          selectedIcon: _selectedIcon,
-          onIconSelected: (iconName) {
-            setState(() {
-              _selectedIcon = iconName;
-            });
-          },
+        InkWell(
+          onTap: _showIconSelector,
+          child: Container(
+            padding: const EdgeInsets.all(AppSizes.padding),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(AppSizes.radiusSm),
+              border: Border.all(color: AppColors.glassBorder, width: 1),
+            ),
+            child: Row(
+              children: [
+                IconPreview(iconName: _selectedIcon, size: AppSizes.icon),
+                const SizedBox(width: AppSizes.spaceSm),
+                Expanded(
+                  child: Text(
+                    _selectedIcon != null ? _selectedIcon! : 'アイコンを選択',
+                    style: TextStyle(
+                      color: _selectedIcon != null
+                          ? AppColors.textPrimary
+                          : AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+                const Icon(Icons.arrow_drop_down),
+              ],
+            ),
+          ),
         ),
       ],
+    );
+  }
+
+  /// アイコン選択モーダルを表示
+  void _showIconSelector() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => IconSelectorModal(
+        selectedIcon: _selectedIcon,
+        onIconSelected: (iconName) {
+          setState(() {
+            _selectedIcon = iconName;
+          });
+        },
+      ),
     );
   }
 
