@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/enums/task_category.dart';
+import '../providers/task_provider.dart';
+import '../../data/models/task_model.dart';
 
 /// 現在のカテゴリフィルタ
 final currentCategoryFilterProvider = StateProvider<TaskCategory?>(
@@ -10,12 +12,31 @@ final currentCategoryFilterProvider = StateProvider<TaskCategory?>(
 final searchQueryProvider = StateProvider<String>((ref) => '');
 
 /// フィルタリングされたタスク（カテゴリ＋検索）
-///
-/// 実際の使用例：
-/// ```dart
-/// final filteredTasks = ref.watch(filteredTasksProvider);
-/// ```
-final filteredTasksProvider = Provider((ref) {
-  // 実装はtask_providerで行う
-  // ここでは基本的なフィルタ状態のみを管理
+final filteredTasksProvider = Provider<List<TaskModel>>((ref) {
+  final tasks = ref.watch(tasksProvider).value ?? [];
+  final categoryFilter = ref.watch(currentCategoryFilterProvider);
+  final searchQuery = ref.watch(searchQueryProvider);
+
+  var filteredTasks = tasks;
+
+  // カテゴリフィルタリング
+  if (categoryFilter != null) {
+    filteredTasks = filteredTasks
+        .where((task) => task.categories.contains(categoryFilter))
+        .toList();
+  }
+
+  // 検索クエリフィルタリング
+  if (searchQuery.isNotEmpty) {
+    final query = searchQuery.toLowerCase();
+    filteredTasks = filteredTasks.where((task) {
+      return task.title.toLowerCase().contains(query) ||
+          task.oneLine.toLowerCase().contains(query) ||
+          task.memo.toLowerCase().contains(query) ||
+          task.createdByName.toLowerCase().contains(query) ||
+          task.assignedToName.toLowerCase().contains(query);
+    }).toList();
+  }
+
+  return filteredTasks;
 });
