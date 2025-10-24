@@ -72,9 +72,13 @@ class TaskBoard extends ConsumerWidget {
             padding: const EdgeInsets.all(AppSizes.paddingXs),
             child: TabBar(
               labelColor: Colors.white,
-              unselectedLabelColor: Colors.white.withOpacity(0.6),
+              unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
+              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              unselectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.normal,
+              ),
               indicator: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.5),
+                color: AppColors.primary.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(AppSizes.radiusSm),
               ),
               tabs: [
@@ -164,25 +168,16 @@ class TaskBoard extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                status.label,
+                '${status.label} (${columnTasks.length})',
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
-              Text(
-                '(${columnTasks.length})',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
+              // 締切別件数表示（完了カラム以外）
+              if (columnTasks.isNotEmpty && !status.isDone)
+                _buildDeadlineCountIndicators(deadlineCounts),
             ],
           ),
-
-          // 締切別件数表示（完了カラム以外）
-          if (columnTasks.isNotEmpty && !status.isDone) ...[
-            const SizedBox(height: AppSizes.spaceXs),
-            _buildDeadlineCountIndicators(deadlineCounts),
-          ],
 
           const SizedBox(height: AppSizes.space),
 
@@ -222,60 +217,84 @@ class TaskBoard extends ConsumerWidget {
 
   /// 締切別件数インジケーター
   Widget _buildDeadlineCountIndicators(Map<String, int> counts) {
-    return Wrap(
-      spacing: AppSizes.spaceXs,
-      children: [
-        if (counts['safe']! > 0)
-          _buildCountBadge('安全', counts['safe']!, AppColors.priorityLow),
-        if (counts['warning']! > 0)
-          _buildCountBadge('注意', counts['warning']!, AppColors.priorityMedium),
-        if (counts['urgent']! > 0)
-          _buildCountBadge('緊急', counts['urgent']!, AppColors.priorityHigh),
-      ],
+    final indicators = <Widget>[];
+
+    if (counts['safe']! > 0) {
+      indicators.add(
+        _buildCountBadge(
+          count: counts['safe']!,
+          label: '安全',
+          color: AppColors.priorityLow,
+        ),
+      );
+    }
+    if (counts['urgent']! > 0) {
+      indicators.add(
+        _buildCountBadge(
+          count: counts['urgent']!,
+          label: '緊急',
+          color: AppColors.priorityHigh,
+        ),
+      );
+    }
+
+    if (indicators.isEmpty) return const SizedBox.shrink();
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: indicators
+          .expand(
+            (widget) => [
+              widget,
+              if (indicators.indexOf(widget) < indicators.length - 1)
+                Container(
+                  width: 1,
+                  height: 16,
+                  margin: const EdgeInsets.symmetric(horizontal: 6),
+                  color: AppColors.glassBorder,
+                ),
+            ],
+          )
+          .toList(),
     );
   }
 
   /// 件数バッジを構築
-  Widget _buildCountBadge(String label, int count, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSizes.paddingXs,
-        vertical: 2,
-      ),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(AppSizes.radiusSm),
-        border: Border.all(color: color, width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 16,
-            height: 16,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-            child: Center(
-              child: Text(
-                count.toString(),
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+  Widget _buildCountBadge({
+    required int count,
+    required String label,
+    required Color color,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // 円形バッジ
+        Container(
+          width: 20,
+          height: 20,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          child: Center(
+            child: Text(
+              count.toString(),
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
           ),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: AppSizes.fontXs,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+        ),
+        const SizedBox(width: 6),
+        // テキストラベル
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: AppSizes.fontXs,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
