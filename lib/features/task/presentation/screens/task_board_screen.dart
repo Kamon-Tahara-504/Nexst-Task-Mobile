@@ -69,8 +69,7 @@ class TaskBoardScreen extends ConsumerWidget {
               return TaskBoard(
                 tasks: filteredTasks,
                 onTaskTap: (task) {
-                  // TODO: タスク詳細画面へ遷移
-                  context.showSnackbar('タスク詳細画面（Phase 4で実装）');
+                  context.go('/task/${task.id}');
                 },
                 onTaskToggleStatus: (task) async {
                   await _handleToggleStatus(ref, task);
@@ -119,8 +118,7 @@ class TaskBoardScreen extends ConsumerWidget {
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
-            // TODO: タスク作成画面へ遷移
-            context.showSnackbar('タスク作成画面（Phase 4で実装）');
+            context.go('/task/create');
           },
           icon: const Icon(Icons.add),
           label: const Text(AppStrings.createTask),
