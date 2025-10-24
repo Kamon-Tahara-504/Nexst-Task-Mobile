@@ -44,8 +44,10 @@ class AppStrings {
   static const String taskRelatedUrl = '関連URL';
   static const String taskIcon = 'アイコン';
   static const String createTask = 'タスク作成';
-  static const String editTask = 'タスク編集';
+  static const String updateTask = 'タスク更新';
   static const String deleteTask = 'タスク削除';
+  static const String taskDetail = 'タスク詳細';
+  static const String editTask = 'タスク編集';
   static const String taskCreated = '作成日';
   static const String noTasks = 'タスクなし';
 
