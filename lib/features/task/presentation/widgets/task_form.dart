@@ -338,21 +338,97 @@ class _TaskFormState extends ConsumerState<TaskForm> {
 
   /// 担当者選択を構築
   Widget _buildAssigneeSelector(String? currentUserId) {
-    return DropdownButtonFormField<String>(
-      value: _assignedToId ?? currentUserId,
-      decoration: const InputDecoration(
-        labelText: '担当者',
-        prefixIcon: Icon(Icons.person),
-      ),
-      items: [
-        DropdownMenuItem<String>(value: currentUserId, child: const Text('自分')),
-        // TODO: プロジェクトメンバー一覧を取得して表示
-      ],
-      onChanged: (value) {
-        setState(() {
-          _assignedToId = value;
-        });
+    final selectedProject = ref.watch(selectedProjectProvider).value;
+
+    if (selectedProject == null) {
+      return DropdownButtonFormField<String>(
+        value: currentUserId,
+        decoration: const InputDecoration(
+          labelText: '担当者',
+          prefixIcon: Icon(Icons.person),
+        ),
+        items: [
+          DropdownMenuItem<String>(
+            value: currentUserId,
+            child: const Text('自分'),
+          ),
+        ],
+        onChanged: null,
+      );
+    }
+
+    final projectMembers = ref.watch(
+      projectMembersWithUserInfoProvider(selectedProject.id),
+    );
+
+    return projectMembers.when(
+      data: (members) {
+        final items = <DropdownMenuItem<String>>[];
+
+        // 自分を最初に追加
+        if (currentUserId != null) {
+          items.add(
+            DropdownMenuItem<String>(
+              value: currentUserId,
+              child: const Text('自分'),
+            ),
+          );
+        }
+
+        // プロジェクトメンバーを追加
+        for (final member in members) {
+          if (member.id != currentUserId) {
+            items.add(
+              DropdownMenuItem<String>(
+                value: member.id,
+                child: Text(member.displayName),
+              ),
+            );
+          }
+        }
+
+        return DropdownButtonFormField<String>(
+          value: _assignedToId ?? currentUserId,
+          decoration: const InputDecoration(
+            labelText: '担当者',
+            prefixIcon: Icon(Icons.person),
+          ),
+          items: items,
+          onChanged: (value) {
+            setState(() {
+              _assignedToId = value;
+            });
+          },
+        );
       },
+      loading: () => DropdownButtonFormField<String>(
+        value: currentUserId,
+        decoration: const InputDecoration(
+          labelText: '担当者',
+          prefixIcon: Icon(Icons.person),
+        ),
+        items: [
+          DropdownMenuItem<String>(
+            value: currentUserId,
+            child: const Text('自分'),
+          ),
+        ],
+        onChanged: null,
+      ),
+      error: (_, __) => DropdownButtonFormField<String>(
+        value: currentUserId,
+        decoration: const InputDecoration(
+          labelText: '担当者',
+          prefixIcon: Icon(Icons.person),
+        ),
+        items: [
+          DropdownMenuItem<String>(
+            value: currentUserId,
+            child: const Text('自分'),
+          ),
+        ],
+        onChanged: null,
+      ),
     );
   }
 

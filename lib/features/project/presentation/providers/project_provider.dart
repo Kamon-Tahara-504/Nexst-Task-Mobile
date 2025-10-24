@@ -2,7 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../auth/presentation/providers/auth_state_provider.dart';
+import '../../../auth/data/repositories/auth_repository.dart';
+import '../../../auth/data/models/user_model.dart';
 import '../../data/models/project_model.dart';
+import '../../data/models/project_member_model.dart';
 import '../../data/repositories/project_repository.dart';
 
 /// SharedPreferencesのキー
@@ -116,6 +119,28 @@ final projectMemberCountProvider = FutureProvider.family<int, String>((
   final repository = ref.read(projectRepositoryProvider);
   return repository.getProjectMemberCount(projectId);
 });
+
+/// プロジェクトメンバー一覧を取得
+final projectMembersProvider =
+    FutureProvider.family<List<ProjectMemberModel>, String>((
+      ref,
+      projectId,
+    ) async {
+      final repository = ref.read(projectRepositoryProvider);
+      return repository.getProjectMembers(projectId);
+    });
+
+/// プロジェクトメンバーのユーザー情報付きリスト
+final projectMembersWithUserInfoProvider =
+    FutureProvider.family<List<UserModel>, String>((ref, projectId) async {
+      final repository = ref.read(projectRepositoryProvider);
+      final authRepository = ref.read(authRepositoryProvider);
+
+      final members = await repository.getProjectMembers(projectId);
+      final userIds = members.map((m) => m.userId).toList();
+
+      return authRepository.getUsersByIds(userIds);
+    });
 
 /// プロジェクト作成のローディング状態
 final projectCreatingProvider = StateProvider<bool>((ref) => false);
