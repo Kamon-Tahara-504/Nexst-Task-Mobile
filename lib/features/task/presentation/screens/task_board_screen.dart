@@ -17,7 +17,11 @@ import '../../data/models/task_model.dart';
 import '../../data/repositories/task_repository.dart';
 import '../providers/task_provider.dart';
 import '../providers/task_filter_provider.dart';
+import '../providers/task_stats_provider.dart';
 import '../widgets/task_board.dart';
+import '../widgets/task_stats_dashboard.dart';
+import '../../domain/enums/task_category.dart';
+import '../../domain/enums/task_status.dart';
 
 /// タスクボード画面（メイン画面）
 class TaskBoardScreen extends ConsumerWidget {
@@ -25,10 +29,11 @@ class TaskBoardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tasksAsync = ref.watch(tasksProvider);
+    final filteredTasks = ref.watch(filteredTasksProvider);
     final selectedProject = ref.watch(selectedProjectProvider).value;
     final currentUser = ref.watch(currentUserProvider).value;
     final currentCategoryFilter = ref.watch(currentCategoryFilterProvider);
+    final searchQuery = ref.watch(searchQueryProvider);
 
     return GradientBackground(
       child: Scaffold(
@@ -55,65 +60,44 @@ class TaskBoardScreen extends ConsumerWidget {
           },
         ),
         body: SafeArea(
-          child: tasksAsync.when(
-            data: (tasks) {
-              // カテゴリフィルタリング
-              final filteredTasks = currentCategoryFilter != null
-                  ? tasks
-                        .where(
-                          (t) => t.categories.contains(currentCategoryFilter),
-                        )
-                        .toList()
-                  : tasks;
+          child: Column(
+            children: [
+              // 統計ダッシュボード
+              const TaskStatsDashboard(),
+              // 検索バー
+              if (searchQuery.isNotEmpty || currentCategoryFilter != null)
+                _buildSearchAndFilterBar(
+                  context,
+                  ref,
+                  searchQuery,
+                  currentCategoryFilter,
+                ),
+              // タスクボード
+              Expanded(
+                child: TaskBoard(
+                  tasks: filteredTasks,
+                  onTaskTap: (task) {
+                    context.go('/task/${task.id}');
+                  },
+                  onTaskToggleStatus: (task) async {
+                    await _handleToggleStatus(ref, task);
+                  },
+                  onTaskDelete: (task) async {
+                    final confirmed = await context.showConfirmDialog(
+                      title: AppStrings.confirmDelete,
+                      message: '「${task.title}」を削除しますか？',
+                    );
 
-              return TaskBoard(
-                tasks: filteredTasks,
-                onTaskTap: (task) {
-                  context.go('/task/${task.id}');
-                },
-                onTaskToggleStatus: (task) async {
-                  await _handleToggleStatus(ref, task);
-                },
-                onTaskDelete: (task) async {
-                  final confirmed = await context.showConfirmDialog(
-                    title: AppStrings.confirmDelete,
-                    message: '「${task.title}」を削除しますか？',
-                  );
-
-                  if (confirmed) {
-                    await _handleDeleteTask(ref, task, context);
-                  }
-                },
-              );
-            },
-            loading: () => const Center(child: LoadingIndicator()),
-            error: (error, stack) => Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'エラーが発生しました',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleLarge?.copyWith(color: Colors.white),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    error.toString(),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withOpacity(0.8),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                    if (confirmed) {
+                      await _handleDeleteTask(ref, task, context);
+                    }
+                  },
+                  onTaskStatusChanged: (task, newStatus) async {
+                    await _handleStatusChange(ref, task, newStatus);
+                  },
+                ),
               ),
-            ),
+            ],
           ),
         ),
         floatingActionButton: FloatingActionButton.extended(
@@ -133,6 +117,8 @@ class TaskBoardScreen extends ConsumerWidget {
     WidgetRef ref,
     String? projectName,
   ) {
+    final searchQuery = ref.watch(searchQueryProvider);
+    final currentCategoryFilter = ref.watch(currentCategoryFilterProvider);
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -152,14 +138,199 @@ class TaskBoardScreen extends ConsumerWidget {
         ),
       ),
       actions: [
+        // 検索ボタン
+        IconButton(
+          icon: Icon(
+            searchQuery.isNotEmpty ? Icons.search_off : Icons.search,
+            color: searchQuery.isNotEmpty ? AppColors.primary : Colors.white,
+          ),
+          onPressed: () {
+            _showSearchDialog(context, ref, searchQuery);
+          },
+        ),
+        // フィルタ状態表示
+        if (currentCategoryFilter != null)
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.primary, width: 1),
+            ),
+            child: Text(
+              currentCategoryFilter!.label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         // フィルタボタン
         IconButton(
-          icon: const Icon(Icons.filter_list, color: Colors.white),
+          icon: Icon(
+            currentCategoryFilter != null
+                ? Icons.filter_alt
+                : Icons.filter_list,
+            color: currentCategoryFilter != null
+                ? AppColors.primary
+                : Colors.white,
+          ),
           onPressed: () {
             _showFilterMenu(context, ref);
           },
         ),
       ],
+    );
+  }
+
+  /// 検索ダイアログを表示
+  void _showSearchDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String currentQuery,
+  ) {
+    final controller = TextEditingController(text: currentQuery);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('タスクを検索'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'タイトル、説明、担当者名で検索',
+            prefixIcon: Icon(Icons.search),
+          ),
+          autofocus: true,
+          onSubmitted: (value) {
+            ref.read(searchQueryProvider.notifier).state = value;
+            Navigator.pop(context);
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              ref.read(searchQueryProvider.notifier).state = '';
+              Navigator.pop(context);
+            },
+            child: const Text('クリア'),
+          ),
+          TextButton(
+            onPressed: () {
+              ref.read(searchQueryProvider.notifier).state = controller.text;
+              Navigator.pop(context);
+            },
+            child: const Text('検索'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 検索・フィルタバーを構築
+  Widget _buildSearchAndFilterBar(
+    BuildContext context,
+    WidgetRef ref,
+    String searchQuery,
+    TaskCategory? categoryFilter,
+  ) {
+    return LiquidGlassContainer(
+      margin: const EdgeInsets.all(AppSizes.padding),
+      padding: const EdgeInsets.all(AppSizes.paddingSm),
+      child: Row(
+        children: [
+          // 検索クエリ表示
+          if (searchQuery.isNotEmpty) ...[
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.primary, width: 1),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.search,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        searchQuery,
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        ref.read(searchQueryProvider.notifier).state = '';
+                      },
+                      child: const Icon(
+                        Icons.close,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+          // カテゴリフィルタ表示
+          if (categoryFilter != null) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.secondary, width: 1),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.category,
+                    size: 16,
+                    color: AppColors.secondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    categoryFilter.label,
+                    style: const TextStyle(
+                      color: AppColors.secondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      ref.read(currentCategoryFilterProvider.notifier).state =
+                          null;
+                    },
+                    child: const Icon(
+                      Icons.close,
+                      size: 16,
+                      color: AppColors.secondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -195,7 +366,21 @@ class TaskBoardScreen extends ConsumerWidget {
               },
             ),
             const Divider(),
-            // カテゴリ選択は次のフェーズで実装
+            // カテゴリ選択
+            ...TaskCategory.values.map((category) {
+              final isSelected = currentFilter == category;
+              return ListTile(
+                title: Text(category.label),
+                trailing: isSelected
+                    ? const Icon(Icons.check, color: AppColors.primary)
+                    : null,
+                onTap: () {
+                  ref.read(currentCategoryFilterProvider.notifier).state =
+                      isSelected ? null : category;
+                  Navigator.pop(context);
+                },
+              );
+            }).toList(),
           ],
         ),
       ),
@@ -230,6 +415,22 @@ class TaskBoardScreen extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) {
         context.showErrorSnackbar('削除に失敗しました: ${e.toString()}');
+      }
+    }
+  }
+
+  /// ドラッグ&ドロップによるステータス変更処理
+  Future<void> _handleStatusChange(
+    WidgetRef ref,
+    TaskModel task,
+    TaskStatus newStatus,
+  ) async {
+    try {
+      final repository = ref.read(taskRepositoryProvider);
+      await repository.updateTaskStatus(task.id, newStatus);
+    } catch (e) {
+      if (kDebugMode) {
+        print('ステータス変更エラー: $e');
       }
     }
   }
