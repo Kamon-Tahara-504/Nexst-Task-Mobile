@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/project/presentation/screens/project_selection_screen.dart';
+import '../../features/task/presentation/screens/task_board_screen.dart';
 
 /// ルート名の定数
 class AppRoutes {
@@ -98,12 +99,9 @@ class AppRouter {
           path: AppRoutes.taskBoard,
           name: 'taskBoard',
           pageBuilder: (context, state) {
-            // TODO: TaskBoardScreenを実装後に置き換え
             return MaterialPage(
               key: state.pageKey,
-              child: const Scaffold(
-                body: Center(child: Text('Task Board Screen - TODO')),
-              ),
+              child: const TaskBoardScreen(),
             );
           },
           routes: [
