@@ -17,9 +17,7 @@ import '../../data/models/task_model.dart';
 import '../../data/repositories/task_repository.dart';
 import '../providers/task_provider.dart';
 import '../providers/task_filter_provider.dart';
-import '../providers/task_stats_provider.dart';
 import '../widgets/task_board.dart';
-import '../widgets/task_stats_dashboard.dart';
 import '../../domain/enums/task_category.dart';
 import '../../domain/enums/task_status.dart';
 
@@ -61,8 +59,6 @@ class TaskBoardScreen extends ConsumerWidget {
         body: SafeArea(
           child: Column(
             children: [
-              // 統計ダッシュボード
-              const TaskStatsDashboard(),
               // 検索バー
               if (searchQuery.isNotEmpty || currentCategoryFilter != null)
                 _buildSearchAndFilterBar(
@@ -90,9 +86,6 @@ class TaskBoardScreen extends ConsumerWidget {
                     if (confirmed) {
                       await _handleDeleteTask(ref, task, context);
                     }
-                  },
-                  onTaskStatusChanged: (task, newStatus) async {
-                    await _handleStatusChange(ref, task, newStatus);
                   },
                 ),
               ),
@@ -414,22 +407,6 @@ class TaskBoardScreen extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) {
         context.showErrorSnackbar('削除に失敗しました: ${e.toString()}');
-      }
-    }
-  }
-
-  /// ドラッグ&ドロップによるステータス変更処理
-  Future<void> _handleStatusChange(
-    WidgetRef ref,
-    TaskModel task,
-    TaskStatus newStatus,
-  ) async {
-    try {
-      final repository = ref.read(taskRepositoryProvider);
-      await repository.updateTaskStatus(task.id, newStatus);
-    } catch (e) {
-      if (kDebugMode) {
-        print('ステータス変更エラー: $e');
       }
     }
   }

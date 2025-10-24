@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/utils/date_utils.dart';
-import '../../../../shared/widgets/liquid_glass_container.dart';
 import '../../../../shared/widgets/icon_selector.dart';
 import '../../data/models/task_model.dart';
 import '../../domain/enums/task_status.dart';
@@ -16,7 +15,6 @@ class TaskCard extends ConsumerWidget {
   final VoidCallback? onTap;
   final VoidCallback? onToggleStatus;
   final VoidCallback? onDelete;
-  final bool isDraggable;
 
   const TaskCard({
     super.key,
@@ -24,7 +22,6 @@ class TaskCard extends ConsumerWidget {
     this.onTap,
     this.onToggleStatus,
     this.onDelete,
-    this.isDraggable = true,
   });
 
   @override
@@ -49,10 +46,21 @@ class TaskCard extends ConsumerWidget {
       }
     }
 
-    Widget cardContent = LiquidGlassContainer(
+    Widget cardContent = Container(
       padding: const EdgeInsets.all(AppSizes.padding),
-      opacity: 0.8,
-      borderColor: borderColor,
+      decoration: BoxDecoration(
+        color: Colors.white, // タスクカードは白い背景
+        borderRadius: BorderRadius.circular(AppSizes.radiusLiquidGlass),
+        border: Border.all(color: borderColor, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            spreadRadius: 0,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppSizes.radiusLiquidGlass),
@@ -74,6 +82,7 @@ class TaskCard extends ConsumerWidget {
                     task.title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary, // 白い背景に適した色
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -125,7 +134,9 @@ class TaskCard extends ConsumerWidget {
               const SizedBox(height: AppSizes.spaceMd),
               Text(
                 task.oneLine,
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textPrimary, // 白い背景に適した色
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -137,18 +148,7 @@ class TaskCard extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSizes.taskSpacing),
-      child: isDraggable
-          ? Draggable<TaskModel>(
-              data: task,
-              feedback: Material(
-                elevation: 8,
-                borderRadius: BorderRadius.circular(AppSizes.radiusLiquidGlass),
-                child: SizedBox(width: 200, child: cardContent),
-              ),
-              childWhenDragging: Opacity(opacity: 0.5, child: cardContent),
-              child: cardContent,
-            )
-          : cardContent,
+      child: cardContent,
     );
   }
 
