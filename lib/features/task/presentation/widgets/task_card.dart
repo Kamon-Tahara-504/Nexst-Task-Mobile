@@ -16,6 +16,7 @@ class TaskCard extends ConsumerWidget {
   final VoidCallback? onTap;
   final VoidCallback? onToggleStatus;
   final VoidCallback? onDelete;
+  final bool isDraggable;
 
   const TaskCard({
     super.key,
@@ -23,6 +24,7 @@ class TaskCard extends ConsumerWidget {
     this.onTap,
     this.onToggleStatus,
     this.onDelete,
+    this.isDraggable = true,
   });
 
   @override
@@ -47,93 +49,106 @@ class TaskCard extends ConsumerWidget {
       }
     }
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSizes.taskSpacing),
-      child: LiquidGlassContainer(
-        padding: const EdgeInsets.all(AppSizes.padding),
-        opacity: 0.8,
-        borderColor: borderColor,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppSizes.radiusLiquidGlass),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1列目: タイトル + アイコン + ステータスボタン
-              Row(
-                children: [
-                  // アイコン
-                  if (task.hasIcon) ...[
-                    IconPreview(iconName: task.icon, size: AppSizes.iconSm),
-                    const SizedBox(width: AppSizes.spaceSm),
-                  ],
-
-                  // タイトル
-                  Expanded(
-                    child: Text(
-                      task.title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-
+    Widget cardContent = LiquidGlassContainer(
+      padding: const EdgeInsets.all(AppSizes.padding),
+      opacity: 0.8,
+      borderColor: borderColor,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppSizes.radiusLiquidGlass),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1列目: タイトル + アイコン + ステータスボタン
+            Row(
+              children: [
+                // アイコン
+                if (task.hasIcon) ...[
+                  IconPreview(iconName: task.icon, size: AppSizes.iconSm),
                   const SizedBox(width: AppSizes.spaceSm),
-
-                  // ステータスボタン
-                  _buildStatusButton(context),
                 ],
-              ),
 
-              const SizedBox(height: AppSizes.spaceMd),
-
-              // 2列目: 優先度 + カテゴリタグ + 締切タグ
-              Wrap(
-                spacing: AppSizes.spaceSm,
-                runSpacing: AppSizes.spaceXs,
-                children: [
-                  PriorityBadge(priority: task.priority),
-                  _buildCategoryTag(context),
-                  if (!task.isDone) DeadlineTag(deadline: task.deadline),
-                ],
-              ),
-
-              const SizedBox(height: AppSizes.spaceMd),
-
-              // 3列目: 作成者 / 担当者
-              Text(
-                '作成: ${task.createdByName} / 担当: ${task.assignedToName}',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-              ),
-
-              const SizedBox(height: AppSizes.spaceXs),
-
-              // 4列目: 日付
-              Text(
-                '作成日: ${AppDateUtils.formatDate(task.createdAt)} / 締切: ${AppDateUtils.formatDate(task.deadline)}',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-              ),
-
-              // 一行メモ（あれば表示）
-              if (task.hasOneLine) ...[
-                const SizedBox(height: AppSizes.spaceMd),
-                Text(
-                  task.oneLine,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                // タイトル
+                Expanded(
+                  child: Text(
+                    task.title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
+
+                const SizedBox(width: AppSizes.spaceSm),
+
+                // ステータスボタン
+                _buildStatusButton(context),
               ],
+            ),
+
+            const SizedBox(height: AppSizes.spaceMd),
+
+            // 2列目: 優先度 + カテゴリタグ + 締切タグ
+            Wrap(
+              spacing: AppSizes.spaceSm,
+              runSpacing: AppSizes.spaceXs,
+              children: [
+                PriorityBadge(priority: task.priority),
+                _buildCategoryTag(context),
+                if (!task.isDone) DeadlineTag(deadline: task.deadline),
+              ],
+            ),
+
+            const SizedBox(height: AppSizes.spaceMd),
+
+            // 3列目: 作成者 / 担当者
+            Text(
+              '作成: ${task.createdByName} / 担当: ${task.assignedToName}',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ),
+
+            const SizedBox(height: AppSizes.spaceXs),
+
+            // 4列目: 日付
+            Text(
+              '作成日: ${AppDateUtils.formatDate(task.createdAt)} / 締切: ${AppDateUtils.formatDate(task.deadline)}',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ),
+
+            // 一行メモ（あれば表示）
+            if (task.hasOneLine) ...[
+              const SizedBox(height: AppSizes.spaceMd),
+              Text(
+                task.oneLine,
+                style: Theme.of(context).textTheme.bodyMedium,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
-          ),
+          ],
         ),
       ),
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSizes.taskSpacing),
+      child: isDraggable
+          ? Draggable<TaskModel>(
+              data: task,
+              feedback: Material(
+                elevation: 8,
+                borderRadius: BorderRadius.circular(AppSizes.radiusLiquidGlass),
+                child: SizedBox(width: 200, child: cardContent),
+              ),
+              childWhenDragging: Opacity(opacity: 0.5, child: cardContent),
+              child: cardContent,
+            )
+          : cardContent,
     );
   }
 

@@ -14,6 +14,7 @@ class TaskBoard extends ConsumerWidget {
   final Function(TaskModel)? onTaskTap;
   final Function(TaskModel)? onTaskToggleStatus;
   final Function(TaskModel)? onTaskDelete;
+  final Function(TaskModel, TaskStatus)? onTaskStatusChanged;
 
   const TaskBoard({
     super.key,
@@ -21,6 +22,7 @@ class TaskBoard extends ConsumerWidget {
     this.onTaskTap,
     this.onTaskToggleStatus,
     this.onTaskDelete,
+    this.onTaskStatusChanged,
   });
 
   @override
@@ -133,12 +135,43 @@ class TaskBoard extends ConsumerWidget {
     TaskStatus status,
     List<TaskModel> columnTasks,
   ) {
+    return DragTarget<TaskModel>(
+      onAccept: (task) {
+        if (task.status != status) {
+          onTaskStatusChanged?.call(task, status);
+        }
+      },
+      onWillAccept: (task) {
+        return task != null && task.status != status;
+      },
+      builder: (context, candidateData, rejectedData) {
+        final isHighlighted = candidateData.isNotEmpty;
+
+        return _buildTaskColumnContent(
+          context,
+          status,
+          columnTasks,
+          isHighlighted,
+        );
+      },
+    );
+  }
+
+  /// タスクカラムの内容を構築
+  Widget _buildTaskColumnContent(
+    BuildContext context,
+    TaskStatus status,
+    List<TaskModel> columnTasks,
+    bool isHighlighted,
+  ) {
     // 締切別の件数を計算
     final deadlineCounts = _getDeadlineCounts(columnTasks);
 
     return LiquidGlassContainer(
       margin: const EdgeInsets.all(AppSizes.paddingSm),
       padding: const EdgeInsets.all(AppSizes.columnPadding),
+      opacity: isHighlighted ? 0.9 : 0.8,
+      borderColor: isHighlighted ? AppColors.primary : AppColors.glassBorder,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -182,6 +215,7 @@ class TaskBoard extends ConsumerWidget {
                         onToggleStatus: () =>
                             onTaskToggleStatus?.call(columnTasks[index]),
                         onDelete: () => onTaskDelete?.call(columnTasks[index]),
+                        isDraggable: true,
                       );
                     },
                   ),
