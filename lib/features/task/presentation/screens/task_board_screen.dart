@@ -7,29 +7,43 @@ import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../shared/widgets/gradient_background.dart';
-import '../../../../shared/widgets/loading_indicator.dart';
 import '../../../../shared/widgets/liquid_glass_container.dart';
-import '../../../../shared/widgets/app_drawer.dart';
 import '../../../../shared/extensions/context_extensions.dart';
-import '../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../../project/presentation/providers/project_provider.dart';
 import '../../data/models/task_model.dart';
 import '../../data/repositories/task_repository.dart';
-import '../providers/task_provider.dart';
 import '../providers/task_filter_provider.dart';
 import '../widgets/task_board.dart';
 import '../../domain/enums/task_category.dart';
-import '../../domain/enums/task_status.dart';
 
 /// タスクボード画面（メイン画面）
-class TaskBoardScreen extends ConsumerWidget {
+class TaskBoardScreen extends ConsumerStatefulWidget {
   const TaskBoardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TaskBoardScreen> createState() => _TaskBoardScreenState();
+}
+
+class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
+  late PageController _pageController;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final filteredTasks = ref.watch(filteredTasksProvider);
     final selectedProject = ref.watch(selectedProjectProvider).value;
-    final currentUser = ref.watch(currentUserProvider).value;
     final currentCategoryFilter = ref.watch(currentCategoryFilterProvider);
     final searchQuery = ref.watch(searchQueryProvider);
 
@@ -37,25 +51,6 @@ class TaskBoardScreen extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: _buildAppBar(context, ref, selectedProject?.name),
-        drawer: AppDrawer(
-          projectName: selectedProject?.name,
-          userName: currentUser?.userName,
-          onLogout: () async {
-            final logout = ref.read(logoutProvider);
-            await logout();
-            if (context.mounted) {
-              context.go(AppRoutes.login);
-            }
-          },
-          onChangeProject: () async {
-            await ref
-                .read(selectedProjectIdProvider.notifier)
-                .clearSelectedProject();
-            if (context.mounted) {
-              context.go(AppRoutes.projectSelection);
-            }
-          },
-        ),
         body: SafeArea(
           child: Column(
             children: [
@@ -71,6 +66,12 @@ class TaskBoardScreen extends ConsumerWidget {
               Expanded(
                 child: TaskBoard(
                   tasks: filteredTasks,
+                  pageController: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentIndex = index;
+                    });
+                  },
                   onTaskTap: (task) {
                     context.go('/task/${task.id}');
                   },
@@ -92,13 +93,7 @@ class TaskBoardScreen extends ConsumerWidget {
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            context.go('/task/create');
-          },
-          icon: const Icon(Icons.add),
-          label: const Text(AppStrings.createTask),
-        ),
+        bottomNavigationBar: _buildBottomNavigationBar(context),
       ),
     );
   }
@@ -114,13 +109,11 @@ class TaskBoardScreen extends ConsumerWidget {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      leading: Builder(
-        builder: (context) => IconButton(
-          icon: const Icon(Icons.menu, color: Colors.white),
-          onPressed: () {
-            Scaffold.of(context).openDrawer();
-          },
-        ),
+      leading: IconButton(
+        icon: const Icon(Icons.settings, color: Colors.white),
+        onPressed: () {
+          context.go(AppRoutes.settings);
+        },
       ),
       title: Text(
         projectName ?? AppStrings.appName,
@@ -151,7 +144,7 @@ class TaskBoardScreen extends ConsumerWidget {
               border: Border.all(color: AppColors.primary, width: 1),
             ),
             child: Text(
-              currentCategoryFilter!.label,
+              currentCategoryFilter.label,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 12,
@@ -408,6 +401,119 @@ class TaskBoardScreen extends ConsumerWidget {
       if (context.mounted) {
         context.showErrorSnackbar('削除に失敗しました: ${e.toString()}');
       }
+    }
+  }
+
+  /// 下部ナビゲーションバーを構築
+  Widget _buildBottomNavigationBar(BuildContext context) {
+    return LiquidGlassContainer(
+      margin: const EdgeInsets.all(AppSizes.paddingSm),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSizes.padding,
+        vertical: AppSizes.paddingSm,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          // 未着手
+          _buildNavItem(
+            context,
+            icon: Icons.pause_circle_outline,
+            label: '未着手',
+            index: 0,
+            onTap: () => _onNavItemTapped(0),
+          ),
+
+          // 進行中
+          _buildNavItem(
+            context,
+            icon: Icons.play_circle_outline,
+            label: '進行中',
+            index: 1,
+            onTap: () => _onNavItemTapped(1),
+          ),
+
+          // + ボタン（中央）
+          FloatingActionButton(
+            onPressed: () {
+              context.go(AppRoutes.taskCreate);
+            },
+            backgroundColor: AppColors.primary,
+            child: const Icon(Icons.add, color: Colors.white),
+          ),
+
+          // 完了
+          _buildNavItem(
+            context,
+            icon: Icons.check_circle_outline,
+            label: '完了',
+            index: 2,
+            onTap: () => _onNavItemTapped(2),
+          ),
+
+          // 設定
+          _buildNavItem(
+            context,
+            icon: Icons.settings_outlined,
+            label: '設定',
+            index: 3,
+            onTap: () => context.go(AppRoutes.settings),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ナビゲーションアイテムを構築
+  Widget _buildNavItem(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required int index,
+    required VoidCallback onTap,
+  }) {
+    final isSelected = _currentIndex == index;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: isSelected
+                ? AppColors.primary
+                : Colors.white.withOpacity(0.6),
+            size: AppSizes.iconLg,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: isSelected
+                  ? AppColors.primary
+                  : Colors.white.withOpacity(0.6),
+              fontSize: AppSizes.fontXs,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ナビゲーションアイテムタップ処理
+  void _onNavItemTapped(int index) {
+    if (index < 3) {
+      // 未着手、進行中、完了のみ
+      setState(() {
+        _currentIndex = index;
+      });
+      _pageController.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     }
   }
 }

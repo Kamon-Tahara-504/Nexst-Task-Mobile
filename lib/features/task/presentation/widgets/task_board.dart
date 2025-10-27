@@ -14,6 +14,8 @@ class TaskBoard extends ConsumerWidget {
   final Function(TaskModel)? onTaskTap;
   final Function(TaskModel)? onTaskToggleStatus;
   final Function(TaskModel)? onTaskDelete;
+  final PageController? pageController;
+  final Function(int)? onPageChanged;
 
   const TaskBoard({
     super.key,
@@ -21,6 +23,8 @@ class TaskBoard extends ConsumerWidget {
     this.onTaskTap,
     this.onTaskToggleStatus,
     this.onTaskDelete,
+    this.pageController,
+    this.onPageChanged,
   });
 
   @override
@@ -56,53 +60,21 @@ class TaskBoard extends ConsumerWidget {
     );
   }
 
-  /// モバイルレイアウト（タブ切り替え）
+  /// モバイルレイアウト（ページ切り替え）
   Widget _buildMobileLayout(
     BuildContext context,
     List<TaskModel> todoTasks,
     List<TaskModel> inProgressTasks,
     List<TaskModel> doneTasks,
   ) {
-    return DefaultTabController(
-      length: 3,
-      child: Column(
-        children: [
-          LiquidGlassContainer(
-            margin: const EdgeInsets.all(AppSizes.padding),
-            padding: const EdgeInsets.all(AppSizes.paddingXs),
-            child: TabBar(
-              labelColor: Colors.white,
-              unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
-              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-              unselectedLabelStyle: const TextStyle(
-                fontWeight: FontWeight.normal,
-              ),
-              indicator: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(AppSizes.radiusSm),
-              ),
-              tabs: [
-                Tab(text: '未着手 (${todoTasks.length})'),
-                Tab(text: '進行中 (${inProgressTasks.length})'),
-                Tab(text: '完了 (${doneTasks.length})'),
-              ],
-            ),
-          ),
-          Expanded(
-            child: TabBarView(
-              children: [
-                _buildTaskColumn(context, TaskStatus.todo, todoTasks),
-                _buildTaskColumn(
-                  context,
-                  TaskStatus.inProgress,
-                  inProgressTasks,
-                ),
-                _buildTaskColumn(context, TaskStatus.done, doneTasks),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return PageView(
+      controller: pageController,
+      onPageChanged: onPageChanged,
+      children: [
+        _buildTaskColumn(context, TaskStatus.todo, todoTasks),
+        _buildTaskColumn(context, TaskStatus.inProgress, inProgressTasks),
+        _buildTaskColumn(context, TaskStatus.done, doneTasks),
+      ],
     );
   }
 
