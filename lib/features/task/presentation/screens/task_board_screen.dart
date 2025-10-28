@@ -56,7 +56,7 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
           child: Column(
             children: [
               // 検索バー
-              if (searchQuery.isNotEmpty || currentCategoryFilter != null)
+              if (searchQuery.isNotEmpty)
                 _buildSearchAndFilterBar(
                   context,
                   ref,
@@ -154,25 +154,6 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
             _showSearchDialog(context, ref, searchQuery);
           },
         ),
-        // フィルタ状態表示
-        if (currentCategoryFilter != null)
-          Container(
-            margin: const EdgeInsets.only(right: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primary, width: 1),
-            ),
-            child: Text(
-              currentCategoryFilter.label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
         // フィルタボタン
         IconButton(
           icon: Icon(
@@ -293,47 +274,6 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
               ),
             ),
             const SizedBox(width: 8),
-          ],
-          // カテゴリフィルタ表示
-          if (categoryFilter != null) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.secondary.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.secondary, width: 1),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.category,
-                    size: 16,
-                    color: AppColors.secondary,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    categoryFilter.label,
-                    style: const TextStyle(
-                      color: AppColors.secondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () {
-                      ref.read(currentCategoryFilterProvider.notifier).state =
-                          null;
-                    },
-                    child: const Icon(
-                      Icons.close,
-                      size: 16,
-                      color: AppColors.secondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ],
       ),
