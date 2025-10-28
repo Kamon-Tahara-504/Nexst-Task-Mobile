@@ -14,6 +14,7 @@ import '../../data/models/task_model.dart';
 import '../../data/repositories/task_repository.dart';
 import '../providers/task_filter_provider.dart';
 import '../widgets/task_board.dart';
+import '../widgets/task_bottom_navigation_bar.dart';
 import '../../domain/enums/task_category.dart';
 
 /// タスクボード画面（メイン画面）
@@ -93,7 +94,10 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
             ],
           ),
         ),
-        bottomNavigationBar: _buildBottomNavigationBar(context),
+        bottomNavigationBar: TaskBottomNavigationBar(
+          currentIndex: _currentIndex,
+          onNavItemTapped: _onNavItemTapped,
+        ),
       ),
     );
   }
@@ -402,104 +406,6 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
         context.showErrorSnackbar('削除に失敗しました: ${e.toString()}');
       }
     }
-  }
-
-  /// 下部ナビゲーションバーを構築
-  Widget _buildBottomNavigationBar(BuildContext context) {
-    return LiquidGlassContainer(
-      margin: const EdgeInsets.all(AppSizes.paddingSm),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSizes.padding,
-        vertical: AppSizes.paddingSm,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          // 未着手
-          _buildNavItem(
-            context,
-            icon: Icons.pause_circle_outline,
-            label: '未着手',
-            index: 0,
-            onTap: () => _onNavItemTapped(0),
-          ),
-
-          // 進行中
-          _buildNavItem(
-            context,
-            icon: Icons.play_circle_outline,
-            label: '進行中',
-            index: 1,
-            onTap: () => _onNavItemTapped(1),
-          ),
-
-          // + ボタン（中央）
-          FloatingActionButton(
-            onPressed: () {
-              context.go(AppRoutes.taskCreate);
-            },
-            backgroundColor: AppColors.primary,
-            child: const Icon(Icons.add, color: Colors.white),
-          ),
-
-          // 完了
-          _buildNavItem(
-            context,
-            icon: Icons.check_circle_outline,
-            label: '完了',
-            index: 2,
-            onTap: () => _onNavItemTapped(2),
-          ),
-
-          // 設定
-          _buildNavItem(
-            context,
-            icon: Icons.settings_outlined,
-            label: '設定',
-            index: 3,
-            onTap: () => context.go(AppRoutes.settings),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// ナビゲーションアイテムを構築
-  Widget _buildNavItem(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required int index,
-    required VoidCallback onTap,
-  }) {
-    final isSelected = _currentIndex == index;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: isSelected
-                ? AppColors.primary
-                : Colors.white.withOpacity(0.6),
-            size: AppSizes.iconLg,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected
-                  ? AppColors.primary
-                  : Colors.white.withOpacity(0.6),
-              fontSize: AppSizes.fontXs,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   /// ナビゲーションアイテムタップ処理
