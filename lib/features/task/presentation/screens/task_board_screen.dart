@@ -65,30 +65,47 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
                 ),
               // タスクボード
               Expanded(
-                child: TaskBoard(
-                  tasks: filteredTasks,
-                  pageController: _pageController,
-                  onPageChanged: (index) {
-                    setState(() {
-                      _currentIndex = index;
-                    });
-                  },
-                  onTaskTap: (task) {
-                    context.go('/task/${task.id}');
-                  },
-                  onTaskToggleStatus: (task) async {
-                    await _handleToggleStatus(ref, task);
-                  },
-                  onTaskDelete: (task) async {
-                    final confirmed = await context.showConfirmDialog(
-                      title: AppStrings.confirmDelete,
-                      message: '「${task.title}」を削除しますか？',
-                    );
+                child: Stack(
+                  children: [
+                    TaskBoard(
+                      tasks: filteredTasks,
+                      pageController: _pageController,
+                      onPageChanged: (index) {
+                        setState(() {
+                          _currentIndex = index;
+                        });
+                      },
+                      onTaskTap: (task) {
+                        context.go('/task/${task.id}');
+                      },
+                      onTaskToggleStatus: (task) async {
+                        await _handleToggleStatus(ref, task);
+                      },
+                      onTaskDelete: (task) async {
+                        final confirmed = await context.showConfirmDialog(
+                          title: AppStrings.confirmDelete,
+                          message: '「${task.title}」を削除しますか？',
+                        );
 
-                    if (confirmed) {
-                      await _handleDeleteTask(ref, task, context);
-                    }
-                  },
+                        if (confirmed) {
+                          await _handleDeleteTask(ref, task, context);
+                        }
+                      },
+                    ),
+                    // ソートボタン（右下）
+                    Positioned(
+                      bottom: 16,
+                      right: 16,
+                      child: FloatingActionButton(
+                        onPressed: () {
+                          _showSortDialog(context, ref);
+                        },
+                        backgroundColor: AppColors.primary,
+                        elevation: 2,
+                        child: const Icon(Icons.sort, color: Colors.white),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -344,17 +361,6 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: AppSizes.space),
-            ListTile(
-              title: const Text('すべて'),
-              trailing: currentFilter == null
-                  ? const Icon(Icons.check, color: AppColors.primary)
-                  : null,
-              onTap: () {
-                ref.read(currentCategoryFilterProvider.notifier).state = null;
-                Navigator.pop(context);
-              },
-            ),
-            const Divider(),
             // カテゴリ選択
             ...TaskCategory.values.map((category) {
               final isSelected = currentFilter == category;
@@ -421,5 +427,47 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
         curve: Curves.easeInOut,
       );
     }
+  }
+
+  /// カテゴリフィルタダイアログを表示（ソートボタンから）
+  void _showSortDialog(BuildContext context, WidgetRef ref) {
+    final currentFilter = ref.read(currentCategoryFilterProvider);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => LiquidGlassContainer(
+        margin: const EdgeInsets.all(AppSizes.padding),
+        padding: const EdgeInsets.all(AppSizes.padding),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'カテゴリフィルター',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: AppSizes.space),
+            // カテゴリ選択
+            ...TaskCategory.values.map((category) {
+              final isSelected = currentFilter == category;
+              return ListTile(
+                title: Text(category.label),
+                trailing: isSelected
+                    ? const Icon(Icons.check, color: AppColors.primary)
+                    : null,
+                onTap: () {
+                  ref.read(currentCategoryFilterProvider.notifier).state =
+                      isSelected ? null : category;
+                  Navigator.pop(context);
+                },
+              );
+            }).toList(),
+          ],
+        ),
+      ),
+    );
   }
 }

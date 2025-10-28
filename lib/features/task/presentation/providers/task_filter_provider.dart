@@ -3,9 +3,9 @@ import '../../domain/enums/task_category.dart';
 import '../providers/task_provider.dart';
 import '../../data/models/task_model.dart';
 
-/// 現在のカテゴリフィルタ
+/// 現在のカテゴリフィルタ（初期値: Solo Task）
 final currentCategoryFilterProvider = StateProvider<TaskCategory?>(
-  (ref) => null,
+  (ref) => TaskCategory.solo,
 );
 
 /// 検索クエリ
@@ -19,12 +19,10 @@ final filteredTasksProvider = Provider<List<TaskModel>>((ref) {
 
   var filteredTasks = tasks;
 
-  // カテゴリフィルタリング
-  if (categoryFilter != null) {
-    filteredTasks = filteredTasks
-        .where((task) => task.categories.contains(categoryFilter))
-        .toList();
-  }
+  // カテゴリフィルタリング（初期値Solo Taskが設定されているため常にフィルタリング）
+  filteredTasks = filteredTasks
+      .where((task) => task.categories.contains(categoryFilter))
+      .toList();
 
   // 検索クエリフィルタリング
   if (searchQuery.isNotEmpty) {
