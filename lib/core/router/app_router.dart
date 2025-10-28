@@ -110,7 +110,19 @@ class AppRouter {
             );
           },
           routes: [
-            // タスク詳細画面
+            // タスク作成画面（静的パスを先に定義）
+            GoRoute(
+              path: 'task/create',
+              name: 'taskCreate',
+              pageBuilder: (context, state) {
+                return MaterialPage(
+                  key: state.pageKey,
+                  child: const TaskCreateScreen(),
+                );
+              },
+            ),
+
+            // タスク詳細画面（動的パスを後に定義）
             GoRoute(
               path: 'task/:id',
               name: 'taskDetail',
@@ -119,18 +131,6 @@ class AppRouter {
                 return MaterialPage(
                   key: state.pageKey,
                   child: TaskDetailScreen(taskId: taskId),
-                );
-              },
-            ),
-
-            // タスク作成画面
-            GoRoute(
-              path: 'task/create',
-              name: 'taskCreate',
-              pageBuilder: (context, state) {
-                return MaterialPage(
-                  key: state.pageKey,
-                  child: const TaskCreateScreen(),
                 );
               },
             ),
