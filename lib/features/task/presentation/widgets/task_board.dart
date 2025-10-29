@@ -1,9 +1,10 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/utils/date_utils.dart';
-import '../../../../shared/widgets/liquid_glass_container.dart';
+import '../../../../shared/widgets/gradient_border_container.dart';
 import '../../data/models/task_model.dart';
 import '../../domain/enums/task_status.dart';
 import 'task_card.dart';
@@ -127,11 +128,9 @@ class TaskBoard extends ConsumerWidget {
     // 締切別の件数を計算
     final deadlineCounts = _getDeadlineCounts(columnTasks);
 
-    return LiquidGlassContainer(
+    return GradientBorderContainer(
       margin: const EdgeInsets.all(AppSizes.paddingSm),
       padding: const EdgeInsets.all(AppSizes.columnPadding),
-      opacity: 0.3, // ログイン画面と同じ透明度に統一
-      borderColor: AppColors.glassBorder,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
