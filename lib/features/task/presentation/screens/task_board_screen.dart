@@ -126,7 +126,6 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
     String? projectName,
   ) {
     final searchQuery = ref.watch(searchQueryProvider);
-    final currentCategoryFilter = ref.watch(currentCategoryFilterProvider);
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -152,20 +151,6 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
           ),
           onPressed: () {
             _showSearchDialog(context, ref, searchQuery);
-          },
-        ),
-        // フィルタボタン
-        IconButton(
-          icon: Icon(
-            currentCategoryFilter != null
-                ? Icons.filter_alt
-                : Icons.filter_list,
-            color: currentCategoryFilter != null
-                ? AppColors.primary
-                : Colors.white,
-          ),
-          onPressed: () {
-            _showFilterMenu(context, ref);
           },
         ),
       ],
@@ -276,48 +261,6 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
             const SizedBox(width: 8),
           ],
         ],
-      ),
-    );
-  }
-
-  /// フィルタメニューを表示
-  void _showFilterMenu(BuildContext context, WidgetRef ref) {
-    final currentFilter = ref.read(currentCategoryFilterProvider);
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => LiquidGlassContainer(
-        margin: const EdgeInsets.all(AppSizes.padding),
-        padding: const EdgeInsets.all(AppSizes.padding),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'カテゴリフィルター',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: AppSizes.space),
-            // カテゴリ選択
-            ...TaskCategory.values.map((category) {
-              final isSelected = currentFilter == category;
-              return ListTile(
-                title: Text(category.label),
-                trailing: isSelected
-                    ? const Icon(Icons.check, color: AppColors.primary)
-                    : null,
-                onTap: () {
-                  ref.read(currentCategoryFilterProvider.notifier).state =
-                      isSelected ? null : category;
-                  Navigator.pop(context);
-                },
-              );
-            }).toList(),
-          ],
-        ),
       ),
     );
   }
