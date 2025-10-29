@@ -90,15 +90,19 @@ class TaskBottomNavigationBar extends StatelessWidget {
 
                     // + ボタン（中央）
                     SizedBox(
-                      width: 48,
-                      height: 48,
+                      width: 56,
+                      height: 56,
                       child: FloatingActionButton(
                         onPressed: () {
                           context.go(AppRoutes.taskCreate);
                         },
                         backgroundColor: AppColors.primary,
                         elevation: 2,
-                        child: const Icon(Icons.add, color: Colors.white),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
                     ),
 
