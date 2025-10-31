@@ -4,7 +4,6 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/project/presentation/screens/project_selection_screen.dart';
 import '../../features/task/presentation/screens/task_board_screen.dart';
-import '../../features/task/presentation/screens/task_create_screen.dart';
 import '../../features/task/presentation/screens/task_detail_screen.dart';
 import '../../features/admin/presentation/screens/admin_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
@@ -18,7 +17,6 @@ class AppRoutes {
   static const String projectSelection = '/project-selection';
   static const String taskBoard = '/';
   static const String taskDetail = '/task/:id';
-  static const String taskCreate = '/task/create';
   static const String admin = '/admin';
   static const String settings = '/settings';
 }
@@ -110,19 +108,7 @@ class AppRouter {
             );
           },
           routes: [
-            // タスク作成画面（静的パスを先に定義）
-            GoRoute(
-              path: 'task/create',
-              name: 'taskCreate',
-              pageBuilder: (context, state) {
-                return MaterialPage(
-                  key: state.pageKey,
-                  child: const TaskCreateScreen(),
-                );
-              },
-            ),
-
-            // タスク詳細画面（動的パスを後に定義）
+            // タスク詳細画面（動的パス）
             GoRoute(
               path: 'task/:id',
               name: 'taskDetail',

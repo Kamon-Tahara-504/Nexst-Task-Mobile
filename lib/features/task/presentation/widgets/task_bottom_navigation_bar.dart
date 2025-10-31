@@ -1,12 +1,14 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/router/app_router.dart';
+import 'task_create_modal.dart';
 
 /// タスクボード用の下部ナビゲーションバー
-class TaskBottomNavigationBar extends StatelessWidget {
+class TaskBottomNavigationBar extends ConsumerWidget {
   /// 現在選択されているインデックス（0: 未着手, 1: 進行中, 2: 完了, 3: 設定）
   final int currentIndex;
 
@@ -20,7 +22,7 @@ class TaskBottomNavigationBar extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.only(
@@ -94,7 +96,7 @@ class TaskBottomNavigationBar extends StatelessWidget {
                       height: 56,
                       child: FloatingActionButton(
                         onPressed: () {
-                          context.go(AppRoutes.taskCreate);
+                          TaskCreateModal.show(context, ref);
                         },
                         backgroundColor: AppColors.primary,
                         elevation: 2,
