@@ -4,7 +4,6 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/constants/app_sizes.dart';
 import 'liquid_glass_container.dart';
-import '../../features/auth/presentation/providers/auth_state_provider.dart';
 import '../../features/admin/presentation/providers/admin_auth_provider.dart';
 
 /// アプリケーションのDrawer（サイドバー）
