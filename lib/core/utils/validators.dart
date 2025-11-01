@@ -55,7 +55,7 @@ class Validators {
     }
 
     if (userName.trim().length < minLength) {
-      return 'ユーザー名は${minLength}文字以上で入力してください';
+      return 'ユーザー名は$minLength文字以上で入力してください';
     }
 
     return null; // バリデーション成功
@@ -120,11 +120,11 @@ class Validators {
     final trimmedCode = code.trim();
 
     if (trimmedCode.length < minLength) {
-      return 'プロジェクトコードは${minLength}文字以上で入力してください';
+      return 'プロジェクトコードは$minLength文字以上で入力してください';
     }
 
     if (trimmedCode.length > maxLength) {
-      return 'プロジェクトコードは${maxLength}文字以内で入力してください';
+      return 'プロジェクトコードは$maxLength文字以内で入力してください';
     }
 
     // 英数字とハイフン、アンダースコアのみ許可
@@ -153,11 +153,11 @@ class Validators {
     final trimmedName = name.trim();
 
     if (trimmedName.length < minLength) {
-      return 'プロジェクト名は${minLength}文字以上で入力してください';
+      return 'プロジェクト名は$minLength文字以上で入力してください';
     }
 
     if (trimmedName.length > maxLength) {
-      return 'プロジェクト名は${maxLength}文字以内で入力してください';
+      return 'プロジェクト名は$maxLength文字以内で入力してください';
     }
 
     return null; // バリデーション成功
@@ -204,7 +204,7 @@ class Validators {
 
     if (value.length < minLength) {
       final field = fieldName ?? 'この項目';
-      return '$fieldは${minLength}文字以上で入力してください';
+      return '$fieldは$minLength文字以上で入力してください';
     }
 
     return null;
@@ -222,7 +222,7 @@ class Validators {
 
     if (value.length > maxLength) {
       final field = fieldName ?? 'この項目';
-      return '$fieldは${maxLength}文字以内で入力してください';
+      return '$fieldは$maxLength文字以内で入力してください';
     }
 
     return null;
