@@ -10,6 +10,7 @@ import '../../data/models/task_model.dart';
 import '../../domain/enums/task_status.dart';
 import '../../domain/enums/task_category.dart';
 import '../../domain/enums/priority.dart';
+import '../../../auth/data/models/user_model.dart';
 import '../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../../project/presentation/providers/project_provider.dart';
 
@@ -162,61 +163,36 @@ class _TaskFormState extends ConsumerState<TaskForm> {
             Row(
               children: [
                 Expanded(
-                  child: DropdownButtonFormField<Priority>(
-                    value: _priority,
-                    decoration: const InputDecoration(
-                      labelText: '優先度',
-                      prefixIcon: Icon(Icons.flag_outlined),
-                    ),
-                    items: Priority.values.map((priority) {
-                      return DropdownMenuItem<Priority>(
-                        value: priority,
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 12,
-                              height: 12,
-                              decoration: BoxDecoration(
-                                color: priority.color,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(priority.label),
-                          ],
+                  child: _buildSelectableField(
+                    label: '優先度',
+                    icon: Icons.flag_outlined,
+                    value: _priority.label,
+                    onTap: (context, position) =>
+                        _showPriorityPopup(context, position),
+                    valueWidget: Row(
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: _priority.color,
+                            shape: BoxShape.circle,
+                          ),
                         ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _priority = value;
-                        });
-                      }
-                    },
+                        const SizedBox(width: 8),
+                        Text(_priority.label),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(width: AppSizes.space),
                 Expanded(
-                  child: DropdownButtonFormField<TaskStatus>(
-                    value: _status,
-                    decoration: const InputDecoration(
-                      labelText: 'ステータス',
-                      prefixIcon: Icon(Icons.check_circle_outline),
-                    ),
-                    items: TaskStatus.values.map((status) {
-                      return DropdownMenuItem<TaskStatus>(
-                        value: status,
-                        child: Text(status.label),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _status = value;
-                        });
-                      }
-                    },
+                  child: _buildSelectableField(
+                    label: 'ステータス',
+                    icon: Icons.check_circle_outline,
+                    value: _status.label,
+                    onTap: (context, position) =>
+                        _showStatusPopup(context, position),
                   ),
                 ),
               ],
@@ -423,19 +399,11 @@ class _TaskFormState extends ConsumerState<TaskForm> {
     final selectedProject = ref.watch(selectedProjectProvider).value;
 
     if (selectedProject == null) {
-      return DropdownButtonFormField<String>(
-        value: currentUserId,
-        decoration: const InputDecoration(
-          labelText: '担当者',
-          prefixIcon: Icon(Icons.person),
-        ),
-        items: [
-          DropdownMenuItem<String>(
-            value: currentUserId,
-            child: const Text('自分'),
-          ),
-        ],
-        onChanged: null,
+      return _buildSelectableField(
+        label: '担当者',
+        icon: Icons.person,
+        value: currentUserId != null ? '自分' : '選択してください',
+        onTap: (context, position) {}, // プロジェクト未選択時はタップ無効
       );
     }
 
@@ -445,73 +413,255 @@ class _TaskFormState extends ConsumerState<TaskForm> {
 
     return projectMembers.when(
       data: (members) {
-        final items = <DropdownMenuItem<String>>[];
-
-        // 自分を最初に追加
-        if (currentUserId != null) {
-          items.add(
-            DropdownMenuItem<String>(
-              value: currentUserId,
-              child: const Text('自分'),
-            ),
-          );
-        }
-
-        // プロジェクトメンバーを追加
-        for (final member in members) {
-          if (member.id != currentUserId) {
-            items.add(
-              DropdownMenuItem<String>(
-                value: member.id,
-                child: Text(member.displayName),
-              ),
+        // 選択中の担当者名を取得
+        String displayValue = '選択してください';
+        if (_assignedToId != null) {
+          try {
+            final selectedMember = members.firstWhere(
+              (m) => m.id == _assignedToId,
             );
+            displayValue = selectedMember.displayName;
+          } catch (e) {
+            // メンバーが見つからない場合は自分を表示
+            if (currentUserId != null && _assignedToId == currentUserId) {
+              displayValue = '自分';
+            }
           }
+        } else if (currentUserId != null) {
+          displayValue = '自分';
         }
 
-        return DropdownButtonFormField<String>(
-          value: _assignedToId ?? currentUserId,
-          decoration: const InputDecoration(
-            labelText: '担当者',
-            prefixIcon: Icon(Icons.person),
-          ),
-          items: items,
-          onChanged: (value) {
-            setState(() {
-              _assignedToId = value;
-            });
-          },
+        return _buildSelectableField(
+          label: '担当者',
+          icon: Icons.person,
+          value: displayValue,
+          onTap: (context, position) =>
+              _showAssigneePopup(context, position, members, currentUserId),
         );
       },
-      loading: () => DropdownButtonFormField<String>(
-        value: currentUserId,
-        decoration: const InputDecoration(
-          labelText: '担当者',
-          prefixIcon: Icon(Icons.person),
-        ),
-        items: [
-          DropdownMenuItem<String>(
-            value: currentUserId,
-            child: const Text('自分'),
-          ),
-        ],
-        onChanged: null,
+      loading: () => _buildSelectableField(
+        label: '担当者',
+        icon: Icons.person,
+        value: currentUserId != null ? '自分' : '読み込み中...',
+        onTap: (context, position) {}, // 読み込み中はタップ無効
       ),
-      error: (_, __) => DropdownButtonFormField<String>(
-        value: currentUserId,
-        decoration: const InputDecoration(
-          labelText: '担当者',
-          prefixIcon: Icon(Icons.person),
-        ),
-        items: [
-          DropdownMenuItem<String>(
-            value: currentUserId,
-            child: const Text('自分'),
-          ),
-        ],
-        onChanged: null,
+      error: (_, __) => _buildSelectableField(
+        label: '担当者',
+        icon: Icons.person,
+        value: currentUserId != null ? '自分' : 'エラー',
+        onTap: (context, position) {}, // エラー時はタップ無効
       ),
     );
+  }
+
+  /// 選択可能なフィールドを構築
+  Widget _buildSelectableField({
+    required String label,
+    required IconData icon,
+    required String value,
+    required void Function(BuildContext, RelativeRect) onTap,
+    Widget? valueWidget,
+  }) {
+    final GlobalKey fieldKey = GlobalKey();
+    return GestureDetector(
+      onTap: () {
+        try {
+          final BuildContext? fieldContext = fieldKey.currentContext;
+          if (fieldContext == null) return;
+
+          final RenderBox? renderBox =
+              fieldContext.findRenderObject() as RenderBox?;
+          if (renderBox == null || !renderBox.hasSize) return;
+
+          final screenSize = MediaQuery.of(context).size;
+          final globalPosition = renderBox.localToGlobal(Offset.zero);
+          final fieldBottom = globalPosition.dy + renderBox.size.height;
+
+          // フィールドの下に表示する位置を計算
+          final position = RelativeRect.fromLTRB(
+            globalPosition.dx, // フィールドの左端
+            fieldBottom, // フィールドの下
+            screenSize.width -
+                (globalPosition.dx + renderBox.size.width), // 右端からの距離
+            screenSize.height - fieldBottom, // 下からの距離
+          );
+          onTap(context, position);
+        } catch (e) {
+          // エラーが発生した場合はデフォルトの位置で表示
+          debugPrint('Error calculating popup position: $e');
+          final screenSize = MediaQuery.of(context).size;
+          final position = RelativeRect.fromLTRB(
+            0,
+            screenSize.height * 0.5,
+            screenSize.width,
+            screenSize.height * 0.5,
+          );
+          onTap(context, position);
+        }
+      },
+      child: Container(
+        key: fieldKey,
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.glassBorder, width: 1),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: InputDecorator(
+          decoration: InputDecoration(
+            labelText: label,
+            prefixIcon: Icon(icon),
+            suffixIcon: const Icon(Icons.arrow_drop_down),
+          ),
+          child: valueWidget ?? Text(value),
+        ),
+      ),
+    );
+  }
+
+  /// 優先度選択ポップアップを表示
+  Future<void> _showPriorityPopup(
+    BuildContext context,
+    RelativeRect position,
+  ) async {
+    try {
+      final items = Priority.values.map((priority) {
+        final isSelected = priority == _priority;
+        return PopupMenuItem<Priority>(
+          value: priority,
+          child: Row(
+            children: [
+              Container(
+                width: 16,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: priority.color,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(child: Text(priority.label)),
+              if (isSelected)
+                const Icon(Icons.check, color: AppColors.primary, size: 20),
+            ],
+          ),
+        );
+      }).toList();
+
+      final selected = await showMenu<Priority>(
+        context: context,
+        position: position,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        elevation: 8,
+        items: items,
+      );
+
+      if (selected != null) {
+        setState(() {
+          _priority = selected;
+        });
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Error showing priority popup: $e');
+      debugPrint('Stack trace: $stackTrace');
+    }
+  }
+
+  /// ステータス選択ポップアップを表示
+  Future<void> _showStatusPopup(
+    BuildContext context,
+    RelativeRect position,
+  ) async {
+    try {
+      final items = TaskStatus.values.map((status) {
+        final isSelected = status == _status;
+        return PopupMenuItem<TaskStatus>(
+          value: status,
+          child: Row(
+            children: [
+              Expanded(child: Text(status.label)),
+              if (isSelected)
+                const Icon(Icons.check, color: AppColors.primary, size: 20),
+            ],
+          ),
+        );
+      }).toList();
+
+      final selected = await showMenu<TaskStatus>(
+        context: context,
+        position: position,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        elevation: 8,
+        items: items,
+      );
+
+      if (selected != null) {
+        setState(() {
+          _status = selected;
+        });
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Error showing status popup: $e');
+      debugPrint('Stack trace: $stackTrace');
+    }
+  }
+
+  /// 担当者選択ポップアップを表示
+  Future<void> _showAssigneePopup(
+    BuildContext context,
+    RelativeRect position,
+    List<UserModel> members,
+    String? currentUserId,
+  ) async {
+    final items = <String?>[];
+    final displayNames = <String?, String>{};
+
+    // 自分を最初に追加
+    if (currentUserId != null) {
+      items.add(currentUserId);
+      displayNames[currentUserId] = '自分';
+    }
+
+    // プロジェクトメンバーを追加
+    for (final member in members) {
+      if (member.id != currentUserId) {
+        items.add(member.id);
+        displayNames[member.id] = member.displayName;
+      }
+    }
+
+    final menuItems = items.map((id) {
+      final isSelected = id == _assignedToId;
+      return PopupMenuItem<String>(
+        value: id,
+        child: Row(
+          children: [
+            const Icon(Icons.person, size: 20),
+            const SizedBox(width: 12),
+            Expanded(child: Text(displayNames[id] ?? '')),
+            if (isSelected)
+              const Icon(Icons.check, color: AppColors.primary, size: 20),
+          ],
+        ),
+      );
+    }).toList();
+
+    try {
+      final selected = await showMenu<String>(
+        context: context,
+        position: position,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        elevation: 8,
+        items: menuItems,
+      );
+
+      if (selected != null) {
+        setState(() {
+          _assignedToId = selected;
+        });
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Error showing assignee popup: $e');
+      debugPrint('Stack trace: $stackTrace');
+    }
   }
 
   /// 締切日選択
