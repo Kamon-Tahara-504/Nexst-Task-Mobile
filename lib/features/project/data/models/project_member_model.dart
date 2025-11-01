@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../domain/enums/project_member_role.dart';
 
 part 'project_member_model.freezed.dart';
 part 'project_member_model.g.dart';
@@ -17,7 +18,9 @@ class ProjectMemberModel with _$ProjectMemberModel {
     @JsonKey(name: 'user_id') required String userId,
 
     /// プロジェクト内での役割
-    @Default('member') String role,
+    @JsonKey(fromJson: _roleFromJson, toJson: _roleToJson)
+    @Default(ProjectMemberRole.member)
+    ProjectMemberRole role,
 
     /// アクティブ状態
     @JsonKey(name: 'is_active') @Default(true) bool isActive,
@@ -40,7 +43,7 @@ class ProjectMemberModel with _$ProjectMemberModel {
     required String id,
     required String projectId,
     required String userId,
-    String role = 'member',
+    ProjectMemberRole role = ProjectMemberRole.member,
   }) {
     final now = DateTime.now();
     return ProjectMemberModel(
@@ -55,20 +58,22 @@ class ProjectMemberModel with _$ProjectMemberModel {
   }
 
   /// 管理者かどうか
-  bool get isAdmin => role == 'admin';
+  bool get isAdmin => role == ProjectMemberRole.admin;
 
   /// メンバーかどうか
-  bool get isMember => role == 'member';
+  bool get isMember => role == ProjectMemberRole.member;
 
   /// 役割の表示用文字列
-  String get roleLabel {
-    switch (role) {
-      case 'admin':
-        return '管理者';
-      case 'member':
-        return 'メンバー';
-      default:
-        return role;
-    }
+  String get roleLabel => role.label;
+}
+
+/// JSON変換用ヘルパー関数: ProjectMemberRole -> String
+String _roleToJson(ProjectMemberRole role) => role.value;
+
+/// JSON変換用ヘルパー関数: String -> ProjectMemberRole
+ProjectMemberRole _roleFromJson(dynamic value) {
+  if (value is String) {
+    return ProjectMemberRole.fromString(value);
   }
+  return ProjectMemberRole.member;
 }

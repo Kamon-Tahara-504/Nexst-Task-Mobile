@@ -33,7 +33,8 @@ mixin _$ProjectMemberModel {
   String get userId => throw _privateConstructorUsedError;
 
   /// プロジェクト内での役割
-  String get role => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _roleFromJson, toJson: _roleToJson)
+  ProjectMemberRole get role => throw _privateConstructorUsedError;
 
   /// アクティブ状態
   @JsonKey(name: 'is_active')
@@ -68,7 +69,8 @@ abstract class $ProjectMemberModelCopyWith<$Res> {
     String id,
     @JsonKey(name: 'project_id') String projectId,
     @JsonKey(name: 'user_id') String userId,
-    String role,
+    @JsonKey(fromJson: _roleFromJson, toJson: _roleToJson)
+    ProjectMemberRole role,
     @JsonKey(name: 'is_active') bool isActive,
     @JsonKey(name: 'created_at') DateTime createdAt,
     @JsonKey(name: 'updated_at') DateTime updatedAt,
@@ -115,7 +117,7 @@ class _$ProjectMemberModelCopyWithImpl<$Res, $Val extends ProjectMemberModel>
             role: null == role
                 ? _value.role
                 : role // ignore: cast_nullable_to_non_nullable
-                      as String,
+                      as ProjectMemberRole,
             isActive: null == isActive
                 ? _value.isActive
                 : isActive // ignore: cast_nullable_to_non_nullable
@@ -147,7 +149,8 @@ abstract class _$$ProjectMemberModelImplCopyWith<$Res>
     String id,
     @JsonKey(name: 'project_id') String projectId,
     @JsonKey(name: 'user_id') String userId,
-    String role,
+    @JsonKey(fromJson: _roleFromJson, toJson: _roleToJson)
+    ProjectMemberRole role,
     @JsonKey(name: 'is_active') bool isActive,
     @JsonKey(name: 'created_at') DateTime createdAt,
     @JsonKey(name: 'updated_at') DateTime updatedAt,
@@ -193,7 +196,7 @@ class __$$ProjectMemberModelImplCopyWithImpl<$Res>
         role: null == role
             ? _value.role
             : role // ignore: cast_nullable_to_non_nullable
-                  as String,
+                  as ProjectMemberRole,
         isActive: null == isActive
             ? _value.isActive
             : isActive // ignore: cast_nullable_to_non_nullable
@@ -218,7 +221,8 @@ class _$ProjectMemberModelImpl extends _ProjectMemberModel {
     required this.id,
     @JsonKey(name: 'project_id') required this.projectId,
     @JsonKey(name: 'user_id') required this.userId,
-    this.role = 'member',
+    @JsonKey(fromJson: _roleFromJson, toJson: _roleToJson)
+    this.role = ProjectMemberRole.member,
     @JsonKey(name: 'is_active') this.isActive = true,
     @JsonKey(name: 'created_at') required this.createdAt,
     @JsonKey(name: 'updated_at') required this.updatedAt,
@@ -243,8 +247,8 @@ class _$ProjectMemberModelImpl extends _ProjectMemberModel {
 
   /// プロジェクト内での役割
   @override
-  @JsonKey()
-  final String role;
+  @JsonKey(fromJson: _roleFromJson, toJson: _roleToJson)
+  final ProjectMemberRole role;
 
   /// アクティブ状態
   @override
@@ -319,7 +323,8 @@ abstract class _ProjectMemberModel extends ProjectMemberModel {
     required final String id,
     @JsonKey(name: 'project_id') required final String projectId,
     @JsonKey(name: 'user_id') required final String userId,
-    final String role,
+    @JsonKey(fromJson: _roleFromJson, toJson: _roleToJson)
+    final ProjectMemberRole role,
     @JsonKey(name: 'is_active') final bool isActive,
     @JsonKey(name: 'created_at') required final DateTime createdAt,
     @JsonKey(name: 'updated_at') required final DateTime updatedAt,
@@ -345,7 +350,8 @@ abstract class _ProjectMemberModel extends ProjectMemberModel {
 
   /// プロジェクト内での役割
   @override
-  String get role;
+  @JsonKey(fromJson: _roleFromJson, toJson: _roleToJson)
+  ProjectMemberRole get role;
 
   /// アクティブ状態
   @override
