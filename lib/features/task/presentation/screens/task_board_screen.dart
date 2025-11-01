@@ -222,7 +222,7 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.2),
+                  color: AppColors.primary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: AppColors.primary, width: 1),
                 ),

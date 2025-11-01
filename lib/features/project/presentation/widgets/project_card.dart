@@ -66,7 +66,7 @@ class ProjectCard extends ConsumerWidget {
                 Text(
                   'コード: ${project.code}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
               ],
@@ -87,7 +87,7 @@ class ProjectCard extends ConsumerWidget {
                   Text(
                     'メンバー: $count人',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                 ],

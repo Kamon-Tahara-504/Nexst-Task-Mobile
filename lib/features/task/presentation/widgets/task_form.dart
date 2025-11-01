@@ -410,7 +410,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppColors.primary.withOpacity(0.2)
+                              ? AppColors.primary.withValues(alpha: 0.2)
                               : AppColors.glassBackground,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(

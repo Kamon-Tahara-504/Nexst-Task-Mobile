@@ -43,7 +43,7 @@ class GradientBorderContainer extends StatelessWidget {
           ),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(borderRadius),
               // ボトムナビゲーションバーと同じデザイン: 上部のボーダーのみ強調
               border: const Border(

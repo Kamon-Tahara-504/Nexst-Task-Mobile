@@ -50,7 +50,7 @@ class TaskBottomNavigationBar extends ConsumerWidget {
           ),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(AppSizes.radiusLiquidGlass),
                 topRight: Radius.circular(AppSizes.radiusLiquidGlass),
@@ -163,7 +163,7 @@ class _NavItem extends StatelessWidget {
             icon,
             color: isSelected
                 ? AppColors.primary
-                : Colors.white.withOpacity(0.6),
+                : Colors.white.withValues(alpha: 0.6),
             size: AppSizes.iconLg,
           ),
           const SizedBox(height: 4),
@@ -172,7 +172,7 @@ class _NavItem extends StatelessWidget {
             style: TextStyle(
               color: isSelected
                   ? AppColors.primary
-                  : Colors.white.withOpacity(0.6),
+                  : Colors.white.withValues(alpha: 0.6),
               fontSize: AppSizes.fontXs,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),

@@ -175,9 +175,9 @@ class AdminStatsDashboard extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(AppSizes.paddingSm),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppSizes.radiusSm),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
       ),
       child: Column(
         children: [

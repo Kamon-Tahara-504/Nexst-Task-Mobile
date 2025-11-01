@@ -112,7 +112,7 @@ class AppTheme {
       // Input Decoration (TextField)
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white.withOpacity(0.8),
+        fillColor: Colors.white.withValues(alpha: 0.8),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSizes.padding,
           vertical: AppSizes.paddingMd,
@@ -120,14 +120,14 @@ class AppTheme {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSizes.radiusMd),
           borderSide: BorderSide(
-            color: AppColors.glassBorder.withOpacity(0.6),
+            color: AppColors.glassBorder.withValues(alpha: 0.6),
             width: AppSizes.glassBorderWidth,
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSizes.radiusMd),
           borderSide: BorderSide(
-            color: AppColors.glassBorder.withOpacity(0.6),
+            color: AppColors.glassBorder.withValues(alpha: 0.6),
             width: AppSizes.glassBorderWidth,
           ),
         ),
@@ -152,7 +152,7 @@ class AppTheme {
         ),
         hintStyle: TextStyle(
           fontSize: AppSizes.fontMd,
-          color: AppColors.textSecondary.withOpacity(0.6),
+          color: AppColors.textSecondary.withValues(alpha: 0.6),
         ),
         errorStyle: const TextStyle(
           fontSize: AppSizes.fontSm,
@@ -163,8 +163,8 @@ class AppTheme {
       // Chip
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.glassBackground,
-        selectedColor: AppColors.primary.withOpacity(0.2),
-        secondarySelectedColor: AppColors.secondary.withOpacity(0.2),
+        selectedColor: AppColors.primary.withValues(alpha: 0.2),
+        secondarySelectedColor: AppColors.secondary.withValues(alpha: 0.2),
         labelStyle: const TextStyle(
           fontSize: AppSizes.fontSm,
           color: AppColors.textPrimary,
@@ -172,7 +172,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSizes.radiusSm),
           side: BorderSide(
-            color: AppColors.glassBorder.withOpacity(0.6),
+            color: AppColors.glassBorder.withValues(alpha: 0.6),
             width: 1.0,
           ),
         ),
@@ -202,7 +202,7 @@ class AppTheme {
 
       // Divider
       dividerTheme: DividerThemeData(
-        color: AppColors.glassBorder.withOpacity(0.3),
+        color: AppColors.glassBorder.withValues(alpha: 0.3),
         thickness: 1.0,
         space: AppSizes.space,
       ),

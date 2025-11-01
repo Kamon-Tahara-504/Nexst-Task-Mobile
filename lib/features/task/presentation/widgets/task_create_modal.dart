@@ -73,9 +73,9 @@ class _TaskCreateModalContentState
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.white.withOpacity(0.95),
-                Colors.white.withOpacity(0.90),
-                Colors.white.withOpacity(0.85),
+                Colors.white.withValues(alpha: 0.95),
+                Colors.white.withValues(alpha: 0.90),
+                Colors.white.withValues(alpha: 0.85),
               ],
             ),
           ),
@@ -203,7 +203,7 @@ class _TaskCreateModalContentState
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             spreadRadius: 0,
             offset: const Offset(0, -4),
@@ -228,7 +228,7 @@ class _TaskCreateModalContentState
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: AppSizes.padding),
                 elevation: 4,
-                shadowColor: Colors.black.withOpacity(0.3),
+                shadowColor: Colors.black.withValues(alpha: 0.3),
               ),
               child: _isLoading
                   ? const SizedBox(

@@ -77,7 +77,7 @@ class UpcomingTasksList extends ConsumerWidget {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppSizes.radiusSm),
                     border: Border.all(color: AppColors.primary, width: 1),
                   ),
@@ -159,7 +159,7 @@ class UpcomingTasksList extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(AppSizes.paddingSm),
               decoration: BoxDecoration(
-                color: AppColors.glassBackground.withOpacity(0.3),
+                color: AppColors.glassBackground.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(AppSizes.radiusSm),
                 border: Border.all(color: AppColors.glassBorder, width: 1),
               ),
@@ -317,9 +317,12 @@ class UpcomingTasksList extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(AppSizes.paddingSm),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.1),
+        color: AppColors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppSizes.radiusSm),
-        border: Border.all(color: AppColors.primary.withOpacity(0.3), width: 1),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.3),
+          width: 1,
+        ),
       ),
       child: Row(
         children: [
@@ -358,10 +361,10 @@ class UpcomingTasksList extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(AppSizes.paddingSm),
       decoration: BoxDecoration(
-        color: AppColors.secondary.withOpacity(0.1),
+        color: AppColors.secondary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppSizes.radiusSm),
         border: Border.all(
-          color: AppColors.secondary.withOpacity(0.3),
+          color: AppColors.secondary.withValues(alpha: 0.3),
           width: 1,
         ),
       ),

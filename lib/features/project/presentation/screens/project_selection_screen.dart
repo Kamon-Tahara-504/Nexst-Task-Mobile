@@ -85,7 +85,7 @@ class ProjectSelectionScreen extends ConsumerWidget {
                   Text(
                     error.toString(),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -164,7 +164,7 @@ class ProjectSelectionScreen extends ConsumerWidget {
                         ? '新しいプロジェクトを作成するか、\nプロジェクトコードで参加してください'
                         : 'プロジェクトコードで参加してください',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -201,13 +201,13 @@ class ProjectSelectionScreen extends ConsumerWidget {
                 icon: const Icon(Icons.add),
                 label: const Text(AppStrings.createProject),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white.withOpacity(0.3),
+                  backgroundColor: Colors.white.withValues(alpha: 0.3),
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppSizes.radiusMd),
                     side: BorderSide(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       width: 1.5,
                     ),
                   ),
@@ -232,7 +232,7 @@ class ProjectSelectionScreen extends ConsumerWidget {
               ),
               style: OutlinedButton.styleFrom(
                 side: BorderSide(
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   width: 1.5,
                 ),
                 shape: RoundedRectangleBorder(

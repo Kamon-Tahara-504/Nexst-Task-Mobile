@@ -179,7 +179,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         child: ElevatedButton(
                           onPressed: isLoading ? null : _handleRegister,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary.withOpacity(0.8),
+                            backgroundColor: AppColors.primary.withValues(
+                              alpha: 0.8,
+                            ),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -215,10 +217,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         child: Text(
                           'アカウントをお持ちの方はこちら',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             fontSize: AppSizes.fontSm,
                             decoration: TextDecoration.underline,
-                            decorationColor: Colors.white.withOpacity(0.9),
+                            decorationColor: Colors.white.withValues(
+                              alpha: 0.9,
+                            ),
                           ),
                         ),
                       ),

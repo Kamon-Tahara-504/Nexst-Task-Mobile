@@ -70,7 +70,7 @@ class _UserListState extends ConsumerState<UserList> {
                 _showActiveOnly = selected;
               });
             },
-            selectedColor: AppColors.primary.withOpacity(0.3),
+            selectedColor: AppColors.primary.withValues(alpha: 0.3),
             checkmarkColor: AppColors.primary,
           ),
         ],
@@ -181,8 +181,8 @@ class _UserListState extends ConsumerState<UserList> {
       ),
       decoration: BoxDecoration(
         color: user.isActive
-            ? AppColors.success.withOpacity(0.2)
-            : AppColors.error.withOpacity(0.2),
+            ? AppColors.success.withValues(alpha: 0.2)
+            : AppColors.error.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(AppSizes.radiusSm),
         border: Border.all(
           color: user.isActive ? AppColors.success : AppColors.error,
@@ -208,9 +208,9 @@ class _UserListState extends ConsumerState<UserList> {
         vertical: AppSizes.paddingXs,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppSizes.radiusSm),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
       ),
       child: Column(
         children: [

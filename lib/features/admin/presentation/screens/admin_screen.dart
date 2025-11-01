@@ -154,9 +154,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
       child: TabBar(
         controller: _tabController,
         labelColor: Colors.white,
-        unselectedLabelColor: Colors.white.withOpacity(0.6),
+        unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
         indicator: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.5),
+          color: AppColors.primary.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(AppSizes.radiusSm),
         ),
         isScrollable: true,

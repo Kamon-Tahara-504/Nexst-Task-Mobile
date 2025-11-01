@@ -120,7 +120,7 @@ class _IconItem extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary.withOpacity(0.2)
+              ? AppColors.primary.withValues(alpha: 0.2)
               : AppColors.glassBackground,
           borderRadius: BorderRadius.circular(AppSizes.radiusSm),
           border: Border.all(
