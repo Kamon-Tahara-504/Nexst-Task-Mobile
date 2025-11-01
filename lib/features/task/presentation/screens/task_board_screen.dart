@@ -87,7 +87,7 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
                           message: '「${task.title}」を削除しますか？',
                         );
 
-                        if (confirmed) {
+                        if (confirmed && context.mounted) {
                           await _handleDeleteTask(ref, task, context);
                         }
                       },
@@ -347,7 +347,7 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
                   Navigator.pop(context);
                 },
               );
-            }).toList(),
+            }),
           ],
         ),
       ),

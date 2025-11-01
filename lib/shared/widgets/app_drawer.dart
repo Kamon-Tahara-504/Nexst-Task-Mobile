@@ -247,9 +247,9 @@ class AppDrawer extends ConsumerWidget {
           fontWeight: FontWeight.w500,
         ),
       ),
-      children: children,
       tilePadding: const EdgeInsets.symmetric(horizontal: AppSizes.padding),
       childrenPadding: const EdgeInsets.only(left: AppSizes.paddingLg),
+      children: children,
     );
   }
 

@@ -22,13 +22,6 @@ final currentUserProvider = FutureProvider<UserModel?>((ref) async {
   return repository.getCurrentUser();
 });
 
-/// 認証状態の変更を監視
-final authStateProvider = StreamProvider<bool>((ref) {
-  return ref.watch(authStateChangesProvider.stream).map((authState) {
-    return authState.session != null;
-  });
-});
-
 /// ログイン処理のプロバイダー
 final loginProvider =
     Provider<Future<void> Function(String email, String password)>((ref) {

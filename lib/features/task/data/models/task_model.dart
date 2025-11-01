@@ -195,12 +195,12 @@ Priority _priorityFromJson(dynamic value) {
   return Priority.low;
 }
 
-/// JSON変換用ヘルパー関数: List<TaskCategory> -> List<String>
+/// JSON変換用ヘルパー関数: List変換 TaskCategory -> String
 List<String> _categoriesToJson(List<TaskCategory> categories) {
   return TaskCategory.listToStringList(categories);
 }
 
-/// JSON変換用ヘルパー関数: List<dynamic> -> List<TaskCategory>
+/// JSON変換用ヘルパー関数: List変換 dynamic -> TaskCategory
 List<TaskCategory> _categoriesFromJson(dynamic value) {
   if (value is List) {
     return TaskCategory.listFromStringList(value);

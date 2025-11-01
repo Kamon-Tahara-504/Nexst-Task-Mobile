@@ -49,7 +49,7 @@ class PrioritySelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<Priority>(
-      value: selectedPriority,
+      initialValue: selectedPriority,
       decoration: const InputDecoration(
         labelText: '優先度',
         prefixIcon: Icon(Icons.flag_outlined),
