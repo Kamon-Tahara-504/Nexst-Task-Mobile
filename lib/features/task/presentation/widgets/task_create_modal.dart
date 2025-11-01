@@ -81,55 +81,67 @@ class _TaskCreateModalContentState
           ),
           child: SafeArea(
             top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+            child: Stack(
               children: [
-                // ドラッグハンドル
-                Container(
-                  margin: const EdgeInsets.only(top: AppSizes.paddingSm),
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.textSecondary,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                // ヘッダー
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSizes.padding,
-                    vertical: AppSizes.paddingSm,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        AppStrings.createTask,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
+                // メインコンテンツ
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // ドラッグハンドル
+                    Container(
+                      margin: const EdgeInsets.only(top: AppSizes.paddingSm),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.textSecondary,
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.close,
-                          color: AppColors.textPrimary,
-                        ),
-                        onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    // ヘッダー
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSizes.padding,
+                        vertical: AppSizes.paddingSm,
                       ),
-                    ],
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            AppStrings.createTask,
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.close,
+                              color: AppColors.textPrimary,
+                            ),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // コンテンツ
+                    Expanded(
+                      child: selectedProject == null
+                          ? _buildNoProjectSelected()
+                          : _buildTaskForm(
+                              scrollController: widget.scrollController,
+                            ),
+                    ),
+                  ],
+                ),
+                // 作成ボタン（浮かせて配置）
+                if (selectedProject != null)
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: _buildFloatingSubmitButton(),
                   ),
-                ),
-                // コンテンツ
-                Expanded(
-                  child: selectedProject == null
-                      ? _buildNoProjectSelected()
-                      : _buildTaskForm(
-                          scrollController: widget.scrollController,
-                        ),
-                ),
-                // 作成ボタン（下部固定）
-                if (selectedProject != null) _buildSubmitButton(),
               ],
             ),
           ),
@@ -172,7 +184,12 @@ class _TaskCreateModalContentState
   Widget _buildTaskForm({required ScrollController scrollController}) {
     return SingleChildScrollView(
       controller: scrollController,
-      padding: const EdgeInsets.all(AppSizes.padding),
+      padding: const EdgeInsets.only(
+        left: AppSizes.padding,
+        right: AppSizes.padding,
+        top: AppSizes.padding,
+        bottom: 100, // ボタンの高さ分の余白を追加
+      ),
       child: TaskForm(
         formKey: _formKey,
         isLoading: _isLoading,
@@ -183,36 +200,50 @@ class _TaskCreateModalContentState
     );
   }
 
-  /// 送信ボタンを構築（下部固定）
-  Widget _buildSubmitButton() {
+  /// 浮いて見える送信ボタンを構築
+  Widget _buildFloatingSubmitButton() {
     return Container(
-      padding: const EdgeInsets.all(AppSizes.padding),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _isLoading
-                ? null
-                : () {
-                    // フォームを検証し、問題なければ送信トリガーを発火
-                    if (_formKey.currentState?.validate() ?? false) {
-                      _submitTrigger.value = true;
-                    }
-                  },
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: AppSizes.padding),
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            spreadRadius: 0,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSizes.padding),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isLoading
+                  ? null
+                  : () {
+                      // フォームを検証し、問題なければ送信トリガーを発火
+                      if (_formKey.currentState?.validate() ?? false) {
+                        _submitTrigger.value = true;
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: AppSizes.padding),
+                elevation: 4,
+                shadowColor: Colors.black.withOpacity(0.3),
+              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text(
+                      AppStrings.createTask,
+                      style: TextStyle(fontSize: 16),
+                    ),
             ),
-            child: _isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text(
-                    AppStrings.createTask,
-                    style: TextStyle(fontSize: 16),
-                  ),
           ),
         ),
       ),
