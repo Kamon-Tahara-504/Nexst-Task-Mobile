@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
-import 'liquid_glass_container.dart';
 
 /// 利用可能なアイコンのリスト（Web版から取得）
 const List<String> availableIcons = [
@@ -146,151 +145,6 @@ class _IconItem extends StatelessWidget {
   }
 }
 
-/// アイコン選択モーダル
-class IconSelectorModal extends StatefulWidget {
-  /// 現在選択されているアイコン
-  final String? selectedIcon;
-
-  /// アイコン選択時のコールバック
-  final ValueChanged<String?> onIconSelected;
-
-  const IconSelectorModal({
-    super.key,
-    this.selectedIcon,
-    required this.onIconSelected,
-  });
-
-  @override
-  State<IconSelectorModal> createState() => _IconSelectorModalState();
-}
-
-class _IconSelectorModalState extends State<IconSelectorModal> {
-  String? _selectedIcon;
-  String _searchQuery = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedIcon = widget.selectedIcon;
-  }
-
-  List<String> get _filteredIcons {
-    if (_searchQuery.isEmpty) {
-      return availableIcons;
-    }
-    return availableIcons
-        .where((icon) => icon.toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LiquidGlassContainer(
-      margin: const EdgeInsets.all(AppSizes.padding),
-      padding: const EdgeInsets.all(AppSizes.padding),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // ヘッダー
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'アイコンを選択',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: AppSizes.space),
-
-          // 検索フィールド
-          TextField(
-            decoration: const InputDecoration(
-              hintText: 'アイコンを検索...',
-              prefixIcon: Icon(Icons.search),
-            ),
-            onChanged: (value) {
-              setState(() {
-                _searchQuery = value;
-              });
-            },
-          ),
-
-          const SizedBox(height: AppSizes.space),
-
-          // アイコングリッド
-          Flexible(
-            child: SingleChildScrollView(
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 6,
-                  crossAxisSpacing: AppSizes.spaceSm,
-                  mainAxisSpacing: AppSizes.spaceSm,
-                  childAspectRatio: 1,
-                ),
-                itemCount: _filteredIcons.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return _IconItem(
-                      iconName: null,
-                      isSelected: _selectedIcon == null,
-                      onTap: () {
-                        setState(() {
-                          _selectedIcon = null;
-                        });
-                      },
-                    );
-                  }
-
-                  final iconName = _filteredIcons[index - 1];
-                  return _IconItem(
-                    iconName: iconName,
-                    isSelected: _selectedIcon == iconName,
-                    onTap: () {
-                      setState(() {
-                        _selectedIcon = iconName;
-                      });
-                    },
-                  );
-                },
-              ),
-            ),
-          ),
-
-          const SizedBox(height: AppSizes.space),
-
-          // アクションボタン
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('キャンセル'),
-              ),
-              const SizedBox(width: AppSizes.spaceSm),
-              ElevatedButton(
-                onPressed: () {
-                  widget.onIconSelected(_selectedIcon);
-                  Navigator.pop(context);
-                },
-                child: const Text('選択'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 /// アイコンプレビューWidget
 class IconPreview extends StatelessWidget {
   /// アイコン名
@@ -299,20 +153,12 @@ class IconPreview extends StatelessWidget {
   /// サイズ
   final double size;
 
-  const IconPreview({
-    super.key,
-    this.iconName,
-    this.size = AppSizes.iconLg,
-  });
+  const IconPreview({super.key, this.iconName, this.size = AppSizes.iconLg});
 
   @override
   Widget build(BuildContext context) {
     if (iconName == null || iconName!.isEmpty) {
-      return Icon(
-        Icons.code,
-        size: size,
-        color: AppColors.textDisabled,
-      );
+      return Icon(Icons.code, size: size, color: AppColors.textDisabled);
     }
 
     return SvgPicture.asset(
@@ -327,4 +173,3 @@ class IconPreview extends StatelessWidget {
     );
   }
 }
-

@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/validators.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../shared/widgets/liquid_glass_container.dart';
 import '../../../../shared/widgets/icon_selector.dart';
 import '../../data/models/task_model.dart';
@@ -314,61 +315,138 @@ class _TaskFormState extends ConsumerState<TaskForm> {
 
   /// アイコン選択を構築
   Widget _buildIconSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'アイコン（任意）',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    final GlobalKey fieldKey = GlobalKey();
+    return GestureDetector(
+      onTap: () {
+        try {
+          final BuildContext? fieldContext = fieldKey.currentContext;
+          if (fieldContext == null) return;
+
+          final RenderBox? renderBox =
+              fieldContext.findRenderObject() as RenderBox?;
+          if (renderBox == null || !renderBox.hasSize) return;
+
+          _showIconPopup(context);
+        } catch (e) {
+          // エラーが発生した場合は表示
+          debugPrint('Error calculating icon popup position: $e');
+          _showIconPopup(context);
+        }
+      },
+      child: Container(
+        key: fieldKey,
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.glassBorder, width: 1),
+          borderRadius: BorderRadius.circular(4),
         ),
-        const SizedBox(height: 8),
-        InkWell(
-          onTap: _showIconSelector,
-          child: Container(
-            padding: const EdgeInsets.all(AppSizes.padding),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AppSizes.radiusSm),
-              border: Border.all(color: AppColors.glassBorder, width: 1),
-            ),
-            child: Row(
-              children: [
-                IconPreview(iconName: _selectedIcon, size: AppSizes.icon),
-                const SizedBox(width: AppSizes.spaceSm),
-                Expanded(
-                  child: Text(
-                    _selectedIcon != null ? _selectedIcon! : 'アイコンを選択',
-                    style: TextStyle(
-                      color: _selectedIcon != null
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
-                    ),
+        child: InputDecorator(
+          decoration: const InputDecoration(
+            labelText: 'アイコン（任意）',
+            prefixIcon: Icon(Icons.code),
+            suffixIcon: Icon(Icons.arrow_drop_down),
+          ),
+          child: Row(
+            children: [
+              IconPreview(iconName: _selectedIcon, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _selectedIcon != null ? _selectedIcon! : 'アイコンを選択',
+                  style: TextStyle(
+                    color: _selectedIcon != null
+                        ? AppColors.textPrimary
+                        : AppColors.textSecondary,
                   ),
                 ),
-                const Icon(Icons.arrow_drop_down),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 
-  /// アイコン選択モーダルを表示
-  void _showIconSelector() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => IconSelectorModal(
-        selectedIcon: _selectedIcon,
-        onIconSelected: (iconName) {
-          setState(() {
-            _selectedIcon = iconName;
-          });
-        },
-      ),
-    );
+  /// アイコン選択ポップアップを表示
+  Future<void> _showIconPopup(BuildContext context) async {
+    try {
+      await showDialog<String>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('アイコンを選択'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 400),
+              child: SingleChildScrollView(
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 6,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: 1,
+                  ),
+                  itemCount: availableIcons.length + 1, // +1 for "None"
+                  itemBuilder: (context, index) {
+                    final String? iconName;
+                    final bool isSelected;
+
+                    if (index == 0) {
+                      iconName = null;
+                      isSelected = _selectedIcon == null;
+                    } else {
+                      iconName = availableIcons[index - 1];
+                      isSelected = _selectedIcon == iconName;
+                    }
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedIcon = iconName;
+                        });
+                        Navigator.of(dialogContext).pop(iconName);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.primary.withOpacity(0.2)
+                              : AppColors.glassBackground,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.glassBorder,
+                            width: isSelected ? 2.0 : 1.0,
+                          ),
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: iconName != null
+                            ? SvgPicture.asset(
+                                'assets/icons/$iconName.svg',
+                                width: 24,
+                                height: 24,
+                              )
+                            : Icon(
+                                Icons.block,
+                                size: 24,
+                                color: AppColors.textDisabled,
+                              ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // showDialogはここで処理済み（タップ時に即座に選択してpopしているため）
+    } catch (e, stackTrace) {
+      debugPrint('Error showing icon popup: $e');
+      debugPrint('Stack trace: $stackTrace');
+    }
   }
 
   /// 締切日選択を構築
