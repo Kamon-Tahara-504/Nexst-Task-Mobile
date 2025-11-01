@@ -13,18 +13,20 @@ import 'task_form.dart';
 class TaskCreateModal {
   /// モーダルを表示
   static Future<void> show(BuildContext context, WidgetRef ref) async {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final modalHeight = screenHeight * 0.85;
+
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       isDismissible: true,
-      enableDrag: true,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.85,
-        minChildSize: 0.5,
-        maxChildSize: 0.9,
-        builder: (context, scrollController) =>
-            _TaskCreateModalContent(scrollController: scrollController),
+      enableDrag: false, // ドラッグで閉じる機能を無効化
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: SizedBox(height: modalHeight, child: _TaskCreateModalContent()),
       ),
     );
   }
@@ -32,9 +34,7 @@ class TaskCreateModal {
 
 /// タスク作成モーダルのコンテンツ
 class _TaskCreateModalContent extends ConsumerStatefulWidget {
-  final ScrollController scrollController;
-
-  const _TaskCreateModalContent({required this.scrollController});
+  const _TaskCreateModalContent();
 
   @override
   ConsumerState<_TaskCreateModalContent> createState() =>
@@ -128,9 +128,7 @@ class _TaskCreateModalContentState
                     Expanded(
                       child: selectedProject == null
                           ? _buildNoProjectSelected()
-                          : _buildTaskForm(
-                              scrollController: widget.scrollController,
-                            ),
+                          : _buildTaskForm(),
                     ),
                   ],
                 ),
@@ -181,9 +179,8 @@ class _TaskCreateModalContentState
   }
 
   /// タスクフォームを構築
-  Widget _buildTaskForm({required ScrollController scrollController}) {
+  Widget _buildTaskForm() {
     return SingleChildScrollView(
-      controller: scrollController,
       padding: const EdgeInsets.only(
         left: AppSizes.padding,
         right: AppSizes.padding,
