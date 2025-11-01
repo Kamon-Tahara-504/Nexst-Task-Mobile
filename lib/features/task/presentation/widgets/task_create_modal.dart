@@ -44,6 +44,14 @@ class _TaskCreateModalContent extends ConsumerStatefulWidget {
 class _TaskCreateModalContentState
     extends ConsumerState<_TaskCreateModalContent> {
   bool _isLoading = false;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final ValueNotifier<bool> _submitTrigger = ValueNotifier<bool>(false);
+
+  @override
+  void dispose() {
+    _submitTrigger.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +128,8 @@ class _TaskCreateModalContentState
                           scrollController: widget.scrollController,
                         ),
                 ),
+                // 作成ボタン（下部固定）
+                if (selectedProject != null) _buildSubmitButton(),
               ],
             ),
           ),
@@ -163,7 +173,49 @@ class _TaskCreateModalContentState
     return SingleChildScrollView(
       controller: scrollController,
       padding: const EdgeInsets.all(AppSizes.padding),
-      child: TaskForm(isLoading: _isLoading, onSubmit: _handleCreateTask),
+      child: TaskForm(
+        formKey: _formKey,
+        isLoading: _isLoading,
+        onSubmit: _handleCreateTask,
+        showButton: false,
+        submitTrigger: _submitTrigger,
+      ),
+    );
+  }
+
+  /// 送信ボタンを構築（下部固定）
+  Widget _buildSubmitButton() {
+    return Container(
+      padding: const EdgeInsets.all(AppSizes.padding),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _isLoading
+                ? null
+                : () {
+                    // フォームを検証し、問題なければ送信トリガーを発火
+                    if (_formKey.currentState?.validate() ?? false) {
+                      _submitTrigger.value = true;
+                    }
+                  },
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: AppSizes.padding),
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text(
+                    AppStrings.createTask,
+                    style: TextStyle(fontSize: 16),
+                  ),
+          ),
+        ),
+      ),
     );
   }
 

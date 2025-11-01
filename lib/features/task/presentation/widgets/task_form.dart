@@ -18,12 +18,18 @@ class TaskForm extends ConsumerStatefulWidget {
   final TaskModel? initialTask;
   final Function(TaskFormData) onSubmit;
   final bool isLoading;
+  final bool showButton;
+  final GlobalKey<FormState>? formKey;
+  final ValueNotifier<bool>? submitTrigger;
 
   const TaskForm({
     super.key,
     this.initialTask,
     required this.onSubmit,
     this.isLoading = false,
+    this.showButton = true,
+    this.formKey,
+    this.submitTrigger,
   });
 
   @override
@@ -31,7 +37,42 @@ class TaskForm extends ConsumerStatefulWidget {
 }
 
 class _TaskFormState extends ConsumerState<TaskForm> {
-  final _formKey = GlobalKey<FormState>();
+  late final GlobalKey<FormState> _formKey;
+
+  void _onSubmitTriggered() {
+    if (widget.submitTrigger?.value == true) {
+      _handleSubmit();
+      // トリガーをリセット
+      widget.submitTrigger?.value = false;
+    }
+  }
+
+  /// フォームデータを取得（外部から呼び出し可能）
+  TaskFormData? getFormData() {
+    if (!_formKey.currentState!.validate()) {
+      return null;
+    }
+    return TaskFormData(
+      title: _titleController.text.trim(),
+      status: _status,
+      priority: _priority,
+      categories: _categories,
+      icon: _selectedIcon,
+      assignedToId: _assignedToId ?? '',
+      deadline: _deadline,
+      oneLine: _oneLineController.text.trim(),
+      memo: _memoController.text.trim(),
+      relatedUrl: _relatedUrlController.text.trim().isEmpty
+          ? null
+          : _relatedUrlController.text.trim(),
+    );
+  }
+
+  /// フォームを送信（外部から呼び出し可能）
+  void submit() {
+    _handleSubmit();
+  }
+
   final _titleController = TextEditingController();
   final _oneLineController = TextEditingController();
   final _memoController = TextEditingController();
@@ -47,13 +88,17 @@ class _TaskFormState extends ConsumerState<TaskForm> {
   @override
   void initState() {
     super.initState();
+    _formKey = widget.formKey ?? GlobalKey<FormState>();
     if (widget.initialTask != null) {
       _initializeWithTask(widget.initialTask!);
     }
+    // 外部送信トリガーを監視
+    widget.submitTrigger?.addListener(_onSubmitTriggered);
   }
 
   @override
   void dispose() {
+    widget.submitTrigger?.removeListener(_onSubmitTriggered);
     _titleController.dispose();
     _oneLineController.dispose();
     _memoController.dispose();
@@ -231,23 +276,24 @@ class _TaskFormState extends ConsumerState<TaskForm> {
               textInputAction: TextInputAction.done,
             ),
 
-            const SizedBox(height: AppSizes.spaceXl),
-
-            // 送信ボタン
-            ElevatedButton(
-              onPressed: widget.isLoading ? null : _handleSubmit,
-              child: widget.isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(
-                      widget.initialTask != null
-                          ? AppStrings.updateTask
-                          : AppStrings.createTask,
-                    ),
-            ),
+            // 送信ボタン（showButtonがtrueの場合のみ表示）
+            if (widget.showButton) ...[
+              const SizedBox(height: AppSizes.spaceXl),
+              ElevatedButton(
+                onPressed: widget.isLoading ? null : _handleSubmit,
+                child: widget.isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(
+                        widget.initialTask != null
+                            ? AppStrings.updateTask
+                            : AppStrings.createTask,
+                      ),
+              ),
+            ],
           ],
         ),
       ),
