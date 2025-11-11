@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -25,6 +24,7 @@ class TaskBottomNavigationBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(AppSizes.radiusLiquidGlass),
           topRight: Radius.circular(AppSizes.radiusLiquidGlass),
@@ -37,97 +37,78 @@ class TaskBottomNavigationBar extends ConsumerWidget {
             offset: const Offset(0, -4),
           ),
         ],
+        border: Border(
+          top: BorderSide(
+            color: Colors.black.withOpacity(0.05),
+            width: AppSizes.glassBorderWidth,
+          ),
+        ),
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(AppSizes.radiusLiquidGlass),
           topRight: Radius.circular(AppSizes.radiusLiquidGlass),
         ),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: AppSizes.glassBlurSigma,
-            sigmaY: AppSizes.glassBlurSigma,
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.3),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(AppSizes.radiusLiquidGlass),
-                topRight: Radius.circular(AppSizes.radiusLiquidGlass),
-              ),
-              border: const Border(
-                top: BorderSide(
-                  color: AppColors.glassBorder,
-                  width: AppSizes.glassBorderWidth,
-                ),
-              ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.padding,
+              vertical: AppSizes.paddingSm,
             ),
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSizes.padding,
-                  vertical: AppSizes.paddingSm,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                // 未着手
+                _NavItem(
+                  icon: Icons.pause_circle_outline,
+                  label: '未着手',
+                  index: 0,
+                  isSelected: currentIndex == 0,
+                  onTap: () => onNavItemTapped(0),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    // 未着手
-                    _NavItem(
-                      icon: Icons.pause_circle_outline,
-                      label: '未着手',
-                      index: 0,
-                      isSelected: currentIndex == 0,
-                      onTap: () => onNavItemTapped(0),
-                    ),
 
-                    // 進行中
-                    _NavItem(
-                      icon: Icons.play_circle_outline,
-                      label: '進行中',
-                      index: 1,
-                      isSelected: currentIndex == 1,
-                      onTap: () => onNavItemTapped(1),
-                    ),
-
-                    // + ボタン（中央）
-                    SizedBox(
-                      width: 56,
-                      height: 56,
-                      child: FloatingActionButton(
-                        onPressed: () {
-                          TaskCreateModal.show(context, ref);
-                        },
-                        backgroundColor: AppColors.primary,
-                        elevation: 2,
-                        child: const Icon(
-                          Icons.add,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                      ),
-                    ),
-
-                    // 完了
-                    _NavItem(
-                      icon: Icons.check_circle_outline,
-                      label: '完了',
-                      index: 2,
-                      isSelected: currentIndex == 2,
-                      onTap: () => onNavItemTapped(2),
-                    ),
-
-                    // 設定
-                    _NavItem(
-                      icon: Icons.settings_outlined,
-                      label: '設定',
-                      index: 3,
-                      isSelected: currentIndex == 3,
-                      onTap: () => context.go(AppRoutes.settings),
-                    ),
-                  ],
+                // 進行中
+                _NavItem(
+                  icon: Icons.play_circle_outline,
+                  label: '進行中',
+                  index: 1,
+                  isSelected: currentIndex == 1,
+                  onTap: () => onNavItemTapped(1),
                 ),
-              ),
+
+                // + ボタン（中央）
+                SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: FloatingActionButton(
+                    onPressed: () {
+                      TaskCreateModal.show(context, ref);
+                    },
+                    backgroundColor: AppColors.primary,
+                    elevation: 2,
+                    child: const Icon(Icons.add, color: Colors.white, size: 28),
+                  ),
+                ),
+
+                // 完了
+                _NavItem(
+                  icon: Icons.check_circle_outline,
+                  label: '完了',
+                  index: 2,
+                  isSelected: currentIndex == 2,
+                  onTap: () => onNavItemTapped(2),
+                ),
+
+                // 設定
+                _NavItem(
+                  icon: Icons.settings_outlined,
+                  label: '設定',
+                  index: 3,
+                  isSelected: currentIndex == 3,
+                  onTap: () => context.go(AppRoutes.settings),
+                ),
+              ],
             ),
           ),
         ),
@@ -161,18 +142,14 @@ class _NavItem extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: isSelected
-                ? AppColors.primary
-                : Colors.white.withValues(alpha: 0.6),
+            color: isSelected ? AppColors.primary : AppColors.textSecondary,
             size: AppSizes.iconLg,
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              color: isSelected
-                  ? AppColors.primary
-                  : Colors.white.withValues(alpha: 0.6),
+              color: isSelected ? AppColors.primary : AppColors.textSecondary,
               fontSize: AppSizes.fontXs,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
