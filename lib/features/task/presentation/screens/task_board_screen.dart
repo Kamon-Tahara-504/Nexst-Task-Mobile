@@ -51,10 +51,12 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: _buildAppBar(context, ref, selectedProject?.name),
         body: SafeArea(
+          top: false,
           child: Column(
             children: [
+              _buildHeader(context, ref, selectedProject?.name, searchQuery),
+              const SizedBox(height: AppSizes.spaceSm),
               // 検索バー
               if (searchQuery.isNotEmpty)
                 _buildSearchAndFilterBar(
@@ -65,47 +67,50 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
                 ),
               // タスクボード
               Expanded(
-                child: Stack(
-                  children: [
-                    TaskBoard(
-                      tasks: filteredTasks,
-                      pageController: _pageController,
-                      onPageChanged: (index) {
-                        setState(() {
-                          _currentIndex = index;
-                        });
-                      },
-                      onTaskTap: (task) {
-                        context.go('/task/${task.id}');
-                      },
-                      onTaskToggleStatus: (task) async {
-                        await _handleToggleStatus(ref, task);
-                      },
-                      onTaskDelete: (task) async {
-                        final confirmed = await context.showConfirmDialog(
-                          title: AppStrings.confirmDelete,
-                          message: '「${task.title}」を削除しますか？',
-                        );
-
-                        if (confirmed && context.mounted) {
-                          await _handleDeleteTask(ref, task, context);
-                        }
-                      },
-                    ),
-                    // ソートボタン（右下）
-                    Positioned(
-                      bottom: 16,
-                      right: 16,
-                      child: FloatingActionButton(
-                        onPressed: () {
-                          _showSortDialog(context, ref);
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: AppSizes.spaceSm),
+                  child: Stack(
+                    children: [
+                      TaskBoard(
+                        tasks: filteredTasks,
+                        pageController: _pageController,
+                        onPageChanged: (index) {
+                          setState(() {
+                            _currentIndex = index;
+                          });
                         },
-                        backgroundColor: AppColors.primary,
-                        elevation: 2,
-                        child: const Icon(Icons.sort, color: Colors.white),
+                        onTaskTap: (task) {
+                          context.go('/task/${task.id}');
+                        },
+                        onTaskToggleStatus: (task) async {
+                          await _handleToggleStatus(ref, task);
+                        },
+                        onTaskDelete: (task) async {
+                          final confirmed = await context.showConfirmDialog(
+                            title: AppStrings.confirmDelete,
+                            message: '「${task.title}」を削除しますか？',
+                          );
+
+                          if (confirmed && context.mounted) {
+                            await _handleDeleteTask(ref, task, context);
+                          }
+                        },
                       ),
-                    ),
-                  ],
+                      // ソートボタン（右下）
+                      Positioned(
+                        bottom: 16,
+                        right: 16,
+                        child: FloatingActionButton(
+                          onPressed: () {
+                            _showSortDialog(context, ref);
+                          },
+                          backgroundColor: AppColors.primary,
+                          elevation: 2,
+                          child: const Icon(Icons.sort, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -119,41 +124,102 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
     );
   }
 
-  /// AppBarを構築
-  PreferredSizeWidget _buildAppBar(
+  /// ヘッダーを構築
+  Widget _buildHeader(
     BuildContext context,
     WidgetRef ref,
     String? projectName,
+    String searchQuery,
   ) {
-    final searchQuery = ref.watch(searchQueryProvider);
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.settings, color: Colors.white),
-        onPressed: () {
-          context.go(AppRoutes.settings);
-        },
-      ),
-      title: Text(
-        projectName ?? AppStrings.appName,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
+    final bool searchActive = searchQuery.isNotEmpty;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(AppSizes.radiusLiquidGlass),
+          bottomRight: Radius.circular(AppSizes.radiusLiquidGlass),
         ),
-      ),
-      actions: [
-        // 検索ボタン
-        IconButton(
-          icon: Icon(
-            searchQuery.isNotEmpty ? Icons.search_off : Icons.search,
-            color: searchQuery.isNotEmpty ? AppColors.primary : Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.glassShadow,
+            blurRadius: AppSizes.glassShadowBlur,
+            spreadRadius: 0,
+            offset: const Offset(0, 4),
           ),
-          onPressed: () {
-            _showSearchDialog(context, ref, searchQuery);
-          },
+        ],
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.black.withOpacity(0.05),
+            width: AppSizes.glassBorderWidth,
+          ),
         ),
-      ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSizes.padding,
+            vertical: AppSizes.paddingXs,
+          ),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 44,
+                height: 44,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
+                  ),
+                  splashRadius: 24,
+                  onPressed: () {
+                    context.go(AppRoutes.settings);
+                  },
+                  icon: const Icon(Icons.settings_outlined),
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  projectName ?? AppStrings.appName,
+                  textAlign: TextAlign.center,
+                  style:
+                      Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                      ) ??
+                      const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                ),
+              ),
+              SizedBox(
+                width: 44,
+                height: 44,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
+                  ),
+                  splashRadius: 24,
+                  onPressed: () {
+                    _showSearchDialog(context, ref, searchQuery);
+                  },
+                  icon: Icon(searchActive ? Icons.search_off : Icons.search),
+                  color: searchActive
+                      ? AppColors.primary
+                      : AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
