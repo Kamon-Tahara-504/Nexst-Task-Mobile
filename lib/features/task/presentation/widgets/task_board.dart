@@ -131,6 +131,7 @@ class TaskBoard extends ConsumerWidget {
       margin: const EdgeInsets.all(AppSizes.paddingSm),
       padding: const EdgeInsets.all(AppSizes.columnPadding),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ヘッダー
@@ -156,6 +157,8 @@ class TaskBoard extends ConsumerWidget {
             child: columnTasks.isEmpty
                 ? _buildEmptyColumn(context)
                 : ListView.builder(
+                    padding: EdgeInsets.zero,
+                    physics: const AlwaysScrollableScrollPhysics(),
                     itemCount: columnTasks.length,
                     itemBuilder: (context, index) {
                       return TaskCard(
