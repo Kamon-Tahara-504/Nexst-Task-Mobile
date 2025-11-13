@@ -340,7 +340,7 @@ class AppDrawer extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => SafeArea(
+      builder: (bottomSheetContext) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -358,21 +358,20 @@ class AppDrawer extends ConsumerWidget {
                 context,
               ).colorScheme.outline.withValues(alpha: 0.2),
             ),
-            if (isAdmin)
-              ListTile(
-                leading: Icon(
-                  Icons.add_circle,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                title: const Text(AppStrings.createProject),
-                onTap: () {
-                  Navigator.pop(context);
-                  showDialog(
-                    context: context,
-                    builder: (context) => const ProjectCreationModal(),
-                  );
-                },
+            ListTile(
+              leading: Icon(
+                Icons.add_circle,
+                color: Theme.of(context).colorScheme.primary,
               ),
+              title: const Text(AppStrings.createProject),
+              onTap: () {
+                Navigator.pop(bottomSheetContext);
+                showDialog(
+                  context: context,
+                  builder: (dialogContext) => const ProjectCreationModal(),
+                );
+              },
+            ),
             ListTile(
               leading: Icon(
                 Icons.vpn_key,
@@ -380,7 +379,7 @@ class AppDrawer extends ConsumerWidget {
               ),
               title: const Text(AppStrings.joinProject),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(bottomSheetContext);
                 _showJoinProjectDialog(context, ref);
               },
             ),
