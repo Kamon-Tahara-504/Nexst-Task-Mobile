@@ -32,7 +32,7 @@ class AppDrawer extends ConsumerWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Drawer(
-      width: screenWidth * 0.75, // 画面幅の75%
+      width: screenWidth * 0.90, // 画面幅の85%
       backgroundColor: AppColors.backgroundLight,
       child: SafeArea(
         child: Column(
