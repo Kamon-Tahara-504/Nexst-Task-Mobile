@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import '../../../../core/router/app_router.dart';
 import '../../../../shared/widgets/gradient_background.dart';
 import '../../../../shared/widgets/app_drawer.dart';
 import '../../../auth/presentation/providers/auth_state_provider.dart';
@@ -17,17 +15,7 @@ class NoProjectScreen extends ConsumerWidget {
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        drawer: AppDrawer(
-          projectName: null,
-          userName: currentUser?.userName,
-          onLogout: () async {
-            final logout = ref.read(logoutProvider);
-            await logout();
-            if (context.mounted) {
-              context.go(AppRoutes.login);
-            }
-          },
-        ),
+        drawer: AppDrawer(projectName: null, userName: currentUser?.userName),
         body: SafeArea(
           child: Builder(
             builder: (context) {

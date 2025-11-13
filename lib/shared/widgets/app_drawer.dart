@@ -11,7 +11,6 @@ import '../../features/project/data/models/project_model.dart';
 import '../../features/project/presentation/widgets/project_creation_modal.dart';
 import '../../features/project/data/repositories/project_repository.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
-import '../../features/auth/data/models/user_model.dart';
 import '../../shared/widgets/loading_indicator.dart';
 import '../../shared/extensions/context_extensions.dart';
 
@@ -23,15 +22,11 @@ class AppDrawer extends ConsumerWidget {
   /// ユーザー名
   final String? userName;
 
-  /// ログアウトコールバック
-  final VoidCallback? onLogout;
-
-  const AppDrawer({super.key, this.projectName, this.userName, this.onLogout});
+  const AppDrawer({super.key, this.projectName, this.userName});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isAdmin = ref.watch(isAdminProvider);
-    final currentUser = ref.watch(currentUserProvider).value;
     final selectedProjectId = ref.watch(selectedProjectIdProvider);
     final userProjectsAsync = ref.watch(userProjectsProvider);
     final screenWidth = MediaQuery.of(context).size.width;
@@ -50,32 +45,13 @@ class AppDrawer extends ConsumerWidget {
                   horizontal: AppSizes.paddingSm,
                 ),
                 children: [
-                  // アカウント情報セクション
-                  _buildAccountInfoSection(context, ref, currentUser),
-
-                  Divider(
-                    height: AppSizes.space * 2,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withValues(alpha: 0.2),
-                  ),
-
-                  // プロジェクト作成・参加統合ボタン
-                  _buildProjectActionButton(context, ref, isAdmin),
-
-                  Divider(
-                    height: AppSizes.space * 2,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withValues(alpha: 0.2),
-                  ),
-
                   // プロジェクト一覧セクション
                   _buildProjectListSection(
                     context,
                     ref,
                     userProjectsAsync,
                     selectedProjectId,
+                    isAdmin,
                   ),
 
                   Divider(
@@ -86,7 +62,7 @@ class AppDrawer extends ConsumerWidget {
                   ),
 
                   // 管理者ページ（管理者のみ表示）
-                  if (isAdmin) ...[
+                  if (isAdmin)
                     _buildMenuItem(
                       context,
                       icon: Icons.admin_panel_settings,
@@ -96,25 +72,6 @@ class AppDrawer extends ConsumerWidget {
                         context.go(AppRoutes.admin);
                       },
                     ),
-                    Divider(
-                      height: AppSizes.space * 2,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.outline.withValues(alpha: 0.2),
-                    ),
-                  ],
-
-                  // ログアウト
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.logout,
-                    title: AppStrings.logout,
-                    textColor: AppColors.error,
-                    onTap: () {
-                      Navigator.pop(context);
-                      onLogout?.call();
-                    },
-                  ),
                 ],
               ),
             ),
@@ -133,13 +90,10 @@ class AppDrawer extends ConsumerWidget {
     WidgetRef ref,
     AsyncValue<List<ProjectModel>> userProjectsAsync,
     String? selectedProjectId,
+    bool isAdmin,
   ) {
     return userProjectsAsync.when(
       data: (projects) {
-        if (projects.isEmpty) {
-          return _buildEmptyProjectState(context);
-        }
-
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -157,10 +111,17 @@ class AppDrawer extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: AppSizes.spaceSm),
-            ...projects.map((project) {
-              final isSelected = selectedProjectId == project.id;
-              return _buildProjectItem(context, ref, project, isSelected);
-            }),
+            if (projects.isEmpty)
+              _buildEmptyProjectState(context)
+            else ...[
+              ...projects.map((project) {
+                final isSelected = selectedProjectId == project.id;
+                return _buildProjectItem(context, ref, project, isSelected);
+              }),
+              const SizedBox(height: AppSizes.spaceSm),
+              // プロジェクト作成・参加統合ボタン
+              _buildProjectActionButton(context, ref, isAdmin),
+            ],
           ],
         );
       },
@@ -288,156 +249,6 @@ class AppDrawer extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-
-  /// アカウント情報セクションを構築
-  Widget _buildAccountInfoSection(
-    BuildContext context,
-    WidgetRef ref,
-    UserModel? currentUser,
-  ) {
-    if (currentUser == null) {
-      return const SizedBox.shrink();
-    }
-
-    return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppSizes.paddingSm,
-        vertical: AppSizes.paddingXs,
-      ),
-      elevation: 1,
-      color: Theme.of(context).colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
-      ),
-      child: InkWell(
-        onTap: () {
-          _showAccountDetailDialog(context, currentUser);
-        },
-        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSizes.padding),
-          child: Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                child: Icon(
-                  Icons.person,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                ),
-              ),
-              const SizedBox(width: AppSizes.space),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      currentUser.userName,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: AppSizes.spaceXs),
-                    Text(
-                      currentUser.email,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: AppSizes.spaceXs),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSizes.paddingSm,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primaryContainer.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(AppSizes.radiusSm),
-                        border: Border.all(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        currentUser.role.label,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.w600,
-                          fontSize: AppSizes.fontXs,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.chevron_right,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// アカウント詳細ダイアログを表示
-  void _showAccountDetailDialog(BuildContext context, UserModel currentUser) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('アカウント情報'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildDetailRow('ユーザー名', currentUser.userName),
-            const SizedBox(height: AppSizes.space),
-            _buildDetailRow('メールアドレス', currentUser.email),
-            const SizedBox(height: AppSizes.space),
-            _buildDetailRow('権限', currentUser.role.label),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(AppStrings.close),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 詳細行を構築
-  Widget _buildDetailRow(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: AppSizes.fontXs,
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: AppSizes.spaceXs),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: AppSizes.fontSm,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
     );
   }
 

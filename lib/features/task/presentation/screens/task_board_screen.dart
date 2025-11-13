@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/router/app_router.dart';
 import '../../../../shared/widgets/gradient_background.dart';
 import '../../../../shared/widgets/liquid_glass_container.dart';
 import '../../../../shared/widgets/app_drawer.dart';
@@ -59,13 +58,6 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
         drawer: AppDrawer(
           projectName: selectedProject?.name,
           userName: currentUser?.userName,
-          onLogout: () async {
-            final logout = ref.read(logoutProvider);
-            await logout();
-            if (context.mounted) {
-              context.go(AppRoutes.login);
-            }
-          },
         ),
         body: SafeArea(
           top: false,
