@@ -7,7 +7,6 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../shared/widgets/gradient_background.dart';
 import '../../../../shared/widgets/liquid_glass_container.dart';
-import '../../../../shared/extensions/context_extensions.dart';
 import '../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../../admin/presentation/providers/admin_auth_provider.dart';
 import '../../../project/presentation/providers/project_provider.dart';
@@ -164,36 +163,6 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: AppSizes.space),
-
-          // Solo Task
-          _buildMenuItem(
-            context,
-            icon: Icons.person,
-            title: AppStrings.soloTask,
-            onTap: () {
-              context.showSnackbar('Solo Task機能（今後実装）');
-            },
-          ),
-
-          // Group Task
-          _buildMenuItem(
-            context,
-            icon: Icons.group,
-            title: AppStrings.groupTask,
-            onTap: () {
-              context.showSnackbar('Group Task機能（今後実装）');
-            },
-          ),
-
-          // Team Task
-          _buildMenuItem(
-            context,
-            icon: Icons.groups,
-            title: AppStrings.teamTask,
-            onTap: () {
-              context.showSnackbar('Team Task機能（今後実装）');
-            },
-          ),
 
           // 管理者ページ（管理者のみ表示）
           if (isAdmin) ...[

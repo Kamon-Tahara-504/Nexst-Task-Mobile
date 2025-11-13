@@ -8,13 +8,16 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../shared/widgets/gradient_background.dart';
 import '../../../../shared/widgets/liquid_glass_container.dart';
+import '../../../../shared/widgets/app_drawer.dart';
 import '../../../../shared/extensions/context_extensions.dart';
 import '../../../project/presentation/providers/project_provider.dart';
+import '../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../data/models/task_model.dart';
 import '../../data/repositories/task_repository.dart';
 import '../providers/task_filter_provider.dart';
 import '../widgets/task_board.dart';
 import '../widgets/task_bottom_navigation_bar.dart';
+import '../widgets/task_create_modal.dart';
 import '../../domain/enums/task_category.dart';
 
 /// タスクボード画面（メイン画面）
@@ -48,9 +51,30 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
     final currentCategoryFilter = ref.watch(currentCategoryFilterProvider);
     final searchQuery = ref.watch(searchQueryProvider);
 
+    final currentUser = ref.watch(currentUserProvider).value;
+
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
+        drawer: AppDrawer(
+          projectName: selectedProject?.name,
+          userName: currentUser?.userName,
+          onLogout: () async {
+            final logout = ref.read(logoutProvider);
+            await logout();
+            if (context.mounted) {
+              context.go(AppRoutes.login);
+            }
+          },
+          onChangeProject: () async {
+            await ref
+                .read(selectedProjectIdProvider.notifier)
+                .clearSelectedProject();
+            if (context.mounted) {
+              context.go(AppRoutes.projectSelection);
+            }
+          },
+        ),
         body: SafeArea(
           top: false,
           child: Column(
@@ -95,6 +119,23 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
                             await _handleDeleteTask(ref, task, context);
                           }
                         },
+                      ),
+                      // 作成ボタン（左下）
+                      Positioned(
+                        bottom: 16,
+                        left: 16,
+                        child: FloatingActionButton(
+                          onPressed: () {
+                            TaskCreateModal.show(context, ref);
+                          },
+                          backgroundColor: AppColors.primary,
+                          elevation: 2,
+                          child: const Icon(
+                            Icons.add,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
                       ),
                       // ソートボタン（右下）
                       Positioned(
@@ -167,34 +208,41 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
               SizedBox(
                 width: 44,
                 height: 44,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 48,
-                    minHeight: 48,
+                child: Builder(
+                  builder: (scaffoldContext) => IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 48,
+                      minHeight: 48,
+                    ),
+                    splashRadius: 24,
+                    onPressed: () {
+                      Scaffold.of(scaffoldContext).openDrawer();
+                    },
+                    icon: const Icon(Icons.arrow_back),
+                    color: AppColors.textSecondary,
                   ),
-                  splashRadius: 24,
-                  onPressed: () {
-                    context.go(AppRoutes.settings);
-                  },
-                  icon: const Icon(Icons.settings_outlined),
-                  color: AppColors.textSecondary,
                 ),
               ),
               Expanded(
-                child: Text(
-                  projectName ?? AppStrings.appName,
-                  textAlign: TextAlign.center,
-                  style:
-                      Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                      ) ??
-                      const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
+                child: GestureDetector(
+                  onTap: () {
+                    _showSearchDialog(context, ref, searchQuery);
+                  },
+                  child: Text(
+                    projectName ?? AppStrings.appName,
+                    textAlign: TextAlign.center,
+                    style:
+                        Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                        ) ??
+                        const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                  ),
                 ),
               ),
               SizedBox(

@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
-import '../../../../core/router/app_router.dart';
-import 'task_create_modal.dart';
 
 /// タスクボード用の下部ナビゲーションバー
 class TaskBottomNavigationBar extends ConsumerWidget {
-  /// 現在選択されているインデックス（0: 未着手, 1: 進行中, 2: 完了, 3: 設定）
+  /// 現在選択されているインデックス（0: 未着手, 1: 進行中, 2: 完了）
   final int currentIndex;
 
   /// ナビゲーションアイテムがタップされた時のコールバック
@@ -77,20 +74,6 @@ class TaskBottomNavigationBar extends ConsumerWidget {
                   onTap: () => onNavItemTapped(1),
                 ),
 
-                // + ボタン（中央）
-                SizedBox(
-                  width: 56,
-                  height: 56,
-                  child: FloatingActionButton(
-                    onPressed: () {
-                      TaskCreateModal.show(context, ref);
-                    },
-                    backgroundColor: AppColors.primary,
-                    elevation: 2,
-                    child: const Icon(Icons.add, color: Colors.white, size: 28),
-                  ),
-                ),
-
                 // 完了
                 _NavItem(
                   icon: Icons.check_circle_outline,
@@ -98,15 +81,6 @@ class TaskBottomNavigationBar extends ConsumerWidget {
                   index: 2,
                   isSelected: currentIndex == 2,
                   onTap: () => onNavItemTapped(2),
-                ),
-
-                // 設定
-                _NavItem(
-                  icon: Icons.settings_outlined,
-                  label: '設定',
-                  index: 3,
-                  isSelected: currentIndex == 3,
-                  onTap: () => context.go(AppRoutes.settings),
                 ),
               ],
             ),
