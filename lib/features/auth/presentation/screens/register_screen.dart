@@ -51,10 +51,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         _userNameController.text.trim(),
       );
 
-      // 登録成功 → プロジェクト選択画面へ
+      // 登録成功 → ルーターが自動的にリダイレクト
+      // プロジェクト未選択の場合は noProject 画面へ、選択済みの場合は taskBoard へ
       if (mounted) {
         context.showSuccessSnackbar('登録が完了しました');
-        context.go(AppRoutes.projectSelection);
       }
     } catch (e) {
       // エラーは authErrorProvider に設定済み

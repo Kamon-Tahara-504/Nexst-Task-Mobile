@@ -45,10 +45,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final login = ref.read(loginProvider);
       await login(_emailController.text.trim(), _passwordController.text);
 
-      // ログイン成功 → プロジェクト選択画面へ
-      if (mounted) {
-        context.go(AppRoutes.projectSelection);
-      }
+      // ログイン成功 → ルーターが自動的にリダイレクト
+      // プロジェクト未選択の場合は noProject 画面へ、選択済みの場合は taskBoard へ
     } catch (e) {
       // エラーは authErrorProvider に設定済み
       if (mounted) {

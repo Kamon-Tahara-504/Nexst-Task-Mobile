@@ -5,11 +5,10 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/router/app_router.dart';
-import 'liquid_glass_container.dart';
 import '../../features/admin/presentation/providers/admin_auth_provider.dart';
-import '../../features/auth/presentation/providers/auth_state_provider.dart';
 import '../../features/project/presentation/providers/project_provider.dart';
 import '../../features/project/data/models/project_model.dart';
+import '../../features/project/presentation/widgets/project_creation_modal.dart';
 import '../../shared/widgets/loading_indicator.dart';
 
 /// アプリケーションのDrawer（サイドバー）
@@ -23,22 +22,11 @@ class AppDrawer extends ConsumerWidget {
   /// ログアウトコールバック
   final VoidCallback? onLogout;
 
-  /// プロジェクト変更コールバック
-  final VoidCallback? onChangeProject;
-
-  const AppDrawer({
-    super.key,
-    this.projectName,
-    this.userName,
-    this.onLogout,
-    this.onChangeProject,
-  });
+  const AppDrawer({super.key, this.projectName, this.userName, this.onLogout});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isAdmin = ref.watch(isAdminProvider);
-    final currentUser = ref.watch(currentUserProvider).value;
-    final selectedProject = ref.watch(selectedProjectProvider).value;
     final selectedProjectId = ref.watch(selectedProjectIdProvider);
     final userProjectsAsync = ref.watch(userProjectsProvider);
     final screenWidth = MediaQuery.of(context).size.width;
@@ -49,15 +37,6 @@ class AppDrawer extends ConsumerWidget {
       child: SafeArea(
         child: Column(
           children: [
-            // ヘッダー（プロジェクト情報と権限）
-            _buildHeader(
-              context,
-              selectedProject?.name,
-              currentUser?.role.label,
-            ),
-
-            const SizedBox(height: AppSizes.space),
-
             // メニューリスト
             Expanded(
               child: ListView(
@@ -72,6 +51,23 @@ class AppDrawer extends ConsumerWidget {
                     userProjectsAsync,
                     selectedProjectId,
                   ),
+
+                  // プロジェクト作成（管理者のみ表示）
+                  if (isAdmin) ...[
+                    const Divider(height: AppSizes.space * 2),
+                    _buildMenuItem(
+                      context,
+                      icon: Icons.add,
+                      title: AppStrings.createProject,
+                      onTap: () {
+                        Navigator.pop(context);
+                        showDialog(
+                          context: context,
+                          builder: (context) => const ProjectCreationModal(),
+                        );
+                      },
+                    ),
+                  ],
 
                   const Divider(height: AppSizes.space * 2),
 
@@ -88,17 +84,6 @@ class AppDrawer extends ConsumerWidget {
                     ),
                     const Divider(height: AppSizes.space * 2),
                   ],
-
-                  // プロジェクト変更
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.swap_horiz,
-                    title: AppStrings.changeProject,
-                    onTap: () {
-                      Navigator.pop(context);
-                      onChangeProject?.call();
-                    },
-                  ),
 
                   // ログアウト
                   _buildMenuItem(
@@ -119,85 +104,6 @@ class AppDrawer extends ConsumerWidget {
             _buildFooter(context),
           ],
         ),
-      ),
-    );
-  }
-
-  /// ヘッダーを構築
-  Widget _buildHeader(
-    BuildContext context,
-    String? projectName,
-    String? userRole,
-  ) {
-    return LiquidGlassContainer(
-      margin: const EdgeInsets.all(AppSizes.paddingSm),
-      padding: const EdgeInsets.all(AppSizes.padding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.check_circle,
-                size: AppSizes.iconLg,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: AppSizes.spaceSm),
-              Text(
-                AppStrings.appName,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
-              ),
-            ],
-          ),
-          if (projectName != null) ...[
-            const SizedBox(height: AppSizes.spaceSm),
-            const Divider(),
-            const SizedBox(height: AppSizes.spaceSm),
-            Text(
-              projectName,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-            ),
-          ],
-          if (userName != null) ...[
-            const SizedBox(height: AppSizes.spaceXs),
-            Text(
-              userName!,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-            ),
-          ],
-          if (userRole != null) ...[
-            const SizedBox(height: AppSizes.spaceXs),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSizes.paddingSm,
-                vertical: 4,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppSizes.radiusSm),
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  width: 1,
-                ),
-              ),
-              child: Text(
-                userRole,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: AppSizes.fontXs,
-                ),
-              ),
-            ),
-          ],
-        ],
       ),
     );
   }

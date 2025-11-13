@@ -5,106 +5,37 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/router/app_router.dart';
-import '../../../../shared/widgets/gradient_background.dart';
 import '../../../../shared/widgets/liquid_glass_container.dart';
+import '../../../../shared/extensions/context_extensions.dart';
 import '../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../../admin/presentation/providers/admin_auth_provider.dart';
-import '../../../project/presentation/providers/project_provider.dart';
 
-/// 設定画面
-class SettingsScreen extends ConsumerWidget {
-  const SettingsScreen({super.key});
+/// 設定画面のコンテンツ（AppBarなし）
+class SettingsContent extends ConsumerWidget {
+  const SettingsContent({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUser = ref.watch(currentUserProvider).value;
-    final selectedProject = ref.watch(selectedProjectProvider).value;
     final isAdmin = ref.watch(isAdminProvider);
 
-    return GradientBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: _buildAppBar(context),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSizes.padding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // プロジェクト情報
-                _buildProjectInfo(context, selectedProject?.name),
-
-                const SizedBox(height: AppSizes.spaceXl),
-
-                // ユーザー情報
-                _buildUserInfo(context, currentUser?.userName),
-
-                const SizedBox(height: AppSizes.spaceXl),
-
-                // メニュー項目
-                _buildMenuItems(context, ref, isAdmin),
-
-                const SizedBox(height: AppSizes.spaceXl),
-
-                // フッター
-                _buildFooter(context),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// AppBarを構築
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
-        onPressed: () => Navigator.of(context).pop(),
-      ),
-      title: const Text(
-        '設定',
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  /// プロジェクト情報を構築
-  Widget _buildProjectInfo(BuildContext context, String? projectName) {
-    return LiquidGlassContainer(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSizes.padding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.folder,
-                size: AppSizes.iconLg,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: AppSizes.spaceSm),
-              Text(
-                'プロジェクト',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSizes.spaceSm),
-          const Divider(),
-          const SizedBox(height: AppSizes.spaceSm),
-          Text(
-            projectName ?? 'プロジェクトが選択されていません',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
+          // ユーザー情報
+          _buildUserInfo(context, currentUser?.userName),
+
+          const SizedBox(height: AppSizes.spaceXl),
+
+          // メニュー項目
+          _buildMenuItems(context, ref, isAdmin),
+
+          const SizedBox(height: AppSizes.spaceXl),
+
+          // フッター
+          _buildFooter(context),
         ],
       ),
     );
@@ -163,6 +94,36 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: AppSizes.space),
+
+          // Solo Task
+          _buildMenuItem(
+            context,
+            icon: Icons.person,
+            title: AppStrings.soloTask,
+            onTap: () {
+              context.showSnackbar('Solo Task機能（今後実装）');
+            },
+          ),
+
+          // Group Task
+          _buildMenuItem(
+            context,
+            icon: Icons.group,
+            title: AppStrings.groupTask,
+            onTap: () {
+              context.showSnackbar('Group Task機能（今後実装）');
+            },
+          ),
+
+          // Team Task
+          _buildMenuItem(
+            context,
+            icon: Icons.groups,
+            title: AppStrings.teamTask,
+            onTap: () {
+              context.showSnackbar('Team Task機能（今後実装）');
+            },
+          ),
 
           // 管理者ページ（管理者のみ表示）
           if (isAdmin) ...[

@@ -66,14 +66,6 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
               context.go(AppRoutes.login);
             }
           },
-          onChangeProject: () async {
-            await ref
-                .read(selectedProjectIdProvider.notifier)
-                .clearSelectedProject();
-            if (context.mounted) {
-              context.go(AppRoutes.projectSelection);
-            }
-          },
         ),
         body: SafeArea(
           top: false,
