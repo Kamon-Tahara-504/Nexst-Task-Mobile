@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
-import '../../features/project/presentation/screens/no_project_screen.dart';
-import '../../features/task/presentation/screens/task_board_screen.dart';
+import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/task/presentation/screens/task_detail_screen.dart';
 import '../../features/admin/presentation/screens/admin_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
@@ -14,8 +13,7 @@ class AppRoutes {
 
   static const String login = '/login';
   static const String register = '/register';
-  static const String noProject = '/no-project';
-  static const String taskBoard = '/';
+  static const String home = '/';
   static const String taskDetail = '/task/:id';
   static const String admin = '/admin';
   static const String settings = '/settings';
@@ -37,7 +35,7 @@ class AppRouter {
       redirect: (context, state) {
         final isLoggingIn = state.matchedLocation == AppRoutes.login;
         final isRegistering = state.matchedLocation == AppRoutes.register;
-        final isNoProject = state.matchedLocation == AppRoutes.noProject;
+        final isHome = state.matchedLocation == AppRoutes.home;
 
         // 認証されていない場合
         if (!isAuthenticated) {
@@ -47,17 +45,14 @@ class AppRouter {
           return AppRoutes.login; // それ以外はログイン画面へリダイレクト
         }
 
-        // 認証されているが、プロジェクトが選択されていない場合
-        if (!hasSelectedProject) {
-          if (isNoProject) {
-            return null; // プロジェクト未選択画面へのアクセスは許可
-          }
-          return AppRoutes.noProject; // プロジェクト未選択画面へリダイレクト
+        // 認証されている場合、ホーム画面へリダイレクト
+        if (isLoggingIn || isRegistering) {
+          return AppRoutes.home; // ホーム画面へリダイレクト
         }
 
-        // 認証済み＆プロジェクト選択済みの場合、ログイン画面にアクセスしようとしたら
-        if (isLoggingIn || isRegistering || isNoProject) {
-          return AppRoutes.taskBoard; // タスクボードへリダイレクト
+        // 認証済みの場合、ホーム画面へのアクセスは許可
+        if (isHome) {
+          return null;
         }
 
         return null; // それ以外はそのまま
@@ -84,26 +79,14 @@ class AppRouter {
           },
         ),
 
-        // プロジェクト未選択画面（全画面サイドメニュー）
+        // ホーム画面（プロジェクト選択画面）
         GoRoute(
-          path: AppRoutes.noProject,
-          name: 'noProject',
+          path: AppRoutes.home,
+          name: 'home',
           pageBuilder: (context, state) {
             return MaterialPage(
               key: state.pageKey,
-              child: const NoProjectScreen(),
-            );
-          },
-        ),
-
-        // タスクボード（メイン画面）
-        GoRoute(
-          path: AppRoutes.taskBoard,
-          name: 'taskBoard',
-          pageBuilder: (context, state) {
-            return MaterialPage(
-              key: state.pageKey,
-              child: const TaskBoardScreen(),
+              child: const HomeScreen(),
             );
           },
           routes: [
@@ -166,7 +149,7 @@ class AppRouter {
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () {
-                    context.go(AppRoutes.taskBoard);
+                    context.go(AppRoutes.home);
                   },
                   child: const Text('ホームに戻る'),
                 ),

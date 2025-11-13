@@ -29,12 +29,10 @@ class AppDrawer extends ConsumerWidget {
     final isAdmin = ref.watch(isAdminProvider);
     final selectedProjectId = ref.watch(selectedProjectIdProvider);
     final userProjectsAsync = ref.watch(userProjectsProvider);
-    final screenWidth = MediaQuery.of(context).size.width;
 
-    return Drawer(
-      width: screenWidth * 0.90, // 画面幅の90%
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      elevation: 0,
+    return Container(
+      width: double.infinity,
+      color: Theme.of(context).colorScheme.surface,
       child: SafeArea(
         child: Column(
           children: [
@@ -68,7 +66,6 @@ class AppDrawer extends ConsumerWidget {
                       icon: Icons.admin_panel_settings,
                       title: AppStrings.adminPage,
                       onTap: () {
-                        Navigator.pop(context);
                         context.go(AppRoutes.admin);
                       },
                     ),
@@ -204,9 +201,6 @@ class AppDrawer extends ConsumerWidget {
           await ref
               .read(selectedProjectIdProvider.notifier)
               .selectProject(project.id);
-          if (context.mounted) {
-            Navigator.pop(context);
-          }
         },
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSizes.padding,
@@ -308,7 +302,6 @@ class AppDrawer extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSizes.paddingSm),
       child: ElevatedButton.icon(
         onPressed: () {
-          Navigator.pop(context);
           _showProjectActionBottomSheet(context, ref, isAdmin);
         },
         icon: const Icon(Icons.add_circle_outline),
@@ -447,7 +440,6 @@ class AppDrawer extends ConsumerWidget {
 
                   if (context.mounted) {
                     context.showSuccessSnackbar('プロジェクトに参加しました');
-                    context.go(AppRoutes.taskBoard);
                   }
                 }
               } catch (e) {

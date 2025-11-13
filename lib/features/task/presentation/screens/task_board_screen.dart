@@ -7,10 +7,8 @@ import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../shared/widgets/gradient_background.dart';
 import '../../../../shared/widgets/liquid_glass_container.dart';
-import '../../../../shared/widgets/app_drawer.dart';
 import '../../../../shared/extensions/context_extensions.dart';
 import '../../../project/presentation/providers/project_provider.dart';
-import '../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../data/models/task_model.dart';
 import '../../data/repositories/task_repository.dart';
 import '../providers/task_filter_provider.dart';
@@ -21,7 +19,9 @@ import '../../domain/enums/task_category.dart';
 
 /// タスクボード画面（メイン画面）
 class TaskBoardScreen extends ConsumerStatefulWidget {
-  const TaskBoardScreen({super.key});
+  final VoidCallback? onBack;
+
+  const TaskBoardScreen({super.key, this.onBack});
 
   @override
   ConsumerState<TaskBoardScreen> createState() => _TaskBoardScreenState();
@@ -50,15 +50,9 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
     final currentCategoryFilter = ref.watch(currentCategoryFilterProvider);
     final searchQuery = ref.watch(searchQueryProvider);
 
-    final currentUser = ref.watch(currentUserProvider).value;
-
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        drawer: AppDrawer(
-          projectName: selectedProject?.name,
-          userName: currentUser?.userName,
-        ),
         body: SafeArea(
           top: false,
           child: Column(
@@ -192,20 +186,19 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
               SizedBox(
                 width: 44,
                 height: 44,
-                child: Builder(
-                  builder: (scaffoldContext) => IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 48,
-                      minHeight: 48,
-                    ),
-                    splashRadius: 24,
-                    onPressed: () {
-                      Scaffold.of(scaffoldContext).openDrawer();
-                    },
-                    icon: const Icon(Icons.arrow_back),
-                    color: AppColors.textSecondary,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
                   ),
+                  splashRadius: 24,
+                  onPressed: () {
+                    // ホーム画面に戻る
+                    widget.onBack?.call();
+                  },
+                  icon: const Icon(Icons.arrow_back),
+                  color: AppColors.textSecondary,
                 ),
               ),
               Expanded(
