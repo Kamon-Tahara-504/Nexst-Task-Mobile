@@ -7,6 +7,7 @@ import '../../core/constants/app_sizes.dart';
 import '../../core/router/app_router.dart';
 import '../../features/admin/presentation/providers/admin_auth_provider.dart';
 import '../../features/project/presentation/providers/project_provider.dart';
+import '../../features/project/presentation/providers/task_screen_trigger_provider.dart';
 import '../../features/project/data/models/project_model.dart';
 import '../../features/project/presentation/widgets/project_creation_modal.dart';
 import '../../features/project/data/repositories/project_repository.dart';
@@ -198,9 +199,14 @@ class AppDrawer extends ConsumerWidget {
           ),
         ),
         onTap: () async {
-          await ref
-              .read(selectedProjectIdProvider.notifier)
-              .selectProject(project.id);
+          if (isSelected) {
+            // すでに選択中のプロジェクトを再タップした場合もタスク画面を開く
+            requestOpenTaskScreen(ref);
+          } else {
+            await ref
+                .read(selectedProjectIdProvider.notifier)
+                .selectProject(project.id);
+          }
         },
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSizes.padding,

@@ -4,6 +4,7 @@ import '../../../../shared/widgets/gradient_background.dart';
 import '../../../../shared/widgets/app_drawer.dart';
 import '../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../../project/presentation/providers/project_provider.dart';
+import '../../../project/presentation/providers/task_screen_trigger_provider.dart';
 import '../../../task/presentation/screens/task_board_screen.dart';
 
 /// ホーム画面（プロジェクト選択画面）
@@ -65,6 +66,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       }
     });
 
+    // 既存選択の再タップなどで明示的に表示を要求された場合に表示
+    ref.listen<int>(openTaskScreenTriggerProvider, (previous, next) {
+      if (ref.read(selectedProjectIdProvider) != null &&
+          !_isTaskScreenVisible) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _showTaskScreen();
+          }
+        });
+      }
+    });
+
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -74,8 +87,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             GestureDetector(
               behavior: HitTestBehavior.translucent,
               onHorizontalDragStart: (details) {
-                // 左端から一定距離内、または画面全体でスワイプを有効化
-                // プロジェクト選択済みでタスク画面が非表示の場合のみ
+                // プロジェクト選択済みでタスク画面が非表示の場合のみスワイプを有効化
                 if (selectedProjectId != null && !_isTaskScreenVisible) {
                   _isDragging = true;
                   _taskScreenOffset = 0;
@@ -125,10 +137,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 animation: _slideAnimation,
                 builder: (context, child) {
                   // タスク画面の位置を計算（左から右へスライドイン）
+                  // スワイプ中はオフセットを考慮し、非表示時は画面外に配置
                   final taskScreenLeft = _isTaskScreenVisible
                       ? screenWidth * (1 - _slideAnimation.value) -
                             _taskScreenOffset
-                      : screenWidth;
+                      : screenWidth - _taskScreenOffset;
 
                   return Positioned(
                     top: 0,
@@ -138,11 +151,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
                       onHorizontalDragStart: (details) {
-                        // 左端から一定距離内でのみスワイプを有効化
-                        if (details.localPosition.dx < 50) {
-                          _isDragging = true;
-                          _taskScreenOffset = 0;
-                        }
+                        // 画面全体でスワイプを有効化（左方向のスワイプでタスク画面を非表示）
+                        _isDragging = true;
+                        _taskScreenOffset = 0;
                       },
                       onHorizontalDragUpdate: (details) {
                         // 左方向のスワイプでタスク画面を非表示
