@@ -29,7 +29,7 @@
 - **ネイティブパフォーマンス**: Flutterによる高速な動作
 - **オフライン対応**: ローカルキャッシュによる快適な操作
 
-## 🛠️ 技術スタック
+## 技術スタック
 
 ### フレームワーク・言語
 - **Flutter**: 3.9.2+
@@ -370,31 +370,3 @@ final xxxStreamProvider = StreamProvider<T>((ref) => ...);
 final xxxNotifierProvider = StateNotifierProvider<Notifier, State>((ref) => ...);
 ```
 
-## テスト
-
-```bash
-# 単体テスト実行
-flutter test
-
-# カバレッジ付きテスト
-flutter test --coverage
-
-# 統合テスト実行
-flutter test integration_test/
-```
-
-## ビルド
-
-### Android APK
-```bash
-flutter build apk --release
-```
-
-### iOS IPA
-```bash
-flutter build ios --release
-```
-
-## ライセンス
-
-© 2025 Nexst Task. 毎日を everyday に.

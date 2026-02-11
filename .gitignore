@@ -46,7 +46,6 @@ app.*.map.json
 
 # Custom directories
 Engineer-task-app/
-Engineer-Task-APP1/
 
 # Plan files
 *_PLAN.md
