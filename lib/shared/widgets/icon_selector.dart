@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
+import '../../core/services/icon_storage_service.dart';
 
 /// 利用可能なアイコンのリスト（Web版から取得）
 const List<String> availableIcons = [
@@ -130,10 +131,15 @@ class _IconItem extends StatelessWidget {
         ),
         padding: const EdgeInsets.all(AppSizes.paddingSm),
         child: iconName != null
-            ? SvgPicture.asset(
-                'assets/icons/$iconName.svg',
+            ? SvgPicture.network(
+                IconStorageService.getIconUrl(iconName!),
                 width: AppSizes.icon,
                 height: AppSizes.icon,
+                placeholderBuilder: (context) => const Icon(
+                  Icons.image_not_supported,
+                  size: AppSizes.icon,
+                  color: AppColors.textDisabled,
+                ),
               )
             : const Icon(
                 Icons.block,
@@ -145,7 +151,7 @@ class _IconItem extends StatelessWidget {
   }
 }
 
-/// アイコンプレビューWidget
+/// アイコンプレビューWidget（Supabase Storage から言語アイコンを取得）
 class IconPreview extends StatelessWidget {
   /// アイコン名
   final String? iconName;
@@ -161,8 +167,9 @@ class IconPreview extends StatelessWidget {
       return Icon(Icons.code, size: size, color: AppColors.textDisabled);
     }
 
-    return SvgPicture.asset(
-      'assets/icons/$iconName.svg',
+    final url = IconStorageService.getIconUrl(iconName!);
+    return SvgPicture.network(
+      url,
       width: size,
       height: size,
       placeholderBuilder: (context) => Icon(
