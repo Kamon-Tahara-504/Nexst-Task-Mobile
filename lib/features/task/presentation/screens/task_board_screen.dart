@@ -9,6 +9,7 @@ import '../../../../shared/widgets/gradient_background.dart';
 import '../../../../shared/widgets/liquid_glass_container.dart';
 import '../../../../shared/extensions/context_extensions.dart';
 import '../../../project/presentation/providers/project_provider.dart';
+import '../../../project/data/models/project_model.dart';
 import '../../data/models/task_model.dart';
 import '../../data/repositories/task_repository.dart';
 import '../providers/task_filter_provider.dart';
@@ -16,6 +17,7 @@ import '../widgets/task_board.dart';
 import '../widgets/task_bottom_navigation_bar.dart';
 import '../widgets/task_create_modal.dart';
 import '../../domain/enums/task_category.dart';
+import '../../../project/presentation/widgets/project_settings_content.dart';
 
 /// タスクボード画面（メイン画面）
 class TaskBoardScreen extends ConsumerStatefulWidget {
@@ -57,7 +59,7 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
           top: false,
           child: Column(
             children: [
-              _buildHeader(context, ref, selectedProject?.name, searchQuery),
+              _buildHeader(context, ref, selectedProject, searchQuery),
               const SizedBox(height: AppSizes.spaceSm),
               // 検索バー
               if (searchQuery.isNotEmpty)
@@ -67,70 +69,88 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
                   searchQuery,
                   currentCategoryFilter,
                 ),
-              // タスクボード
+              // タスクボード or 設定
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: AppSizes.spaceSm),
-                  child: Stack(
-                    children: [
-                      TaskBoard(
-                        tasks: filteredTasks,
-                        pageController: _pageController,
-                        onPageChanged: (index) {
-                          setState(() {
-                            _currentIndex = index;
-                          });
-                        },
-                        onTaskTap: (task) {
-                          context.go('/task/${task.id}');
-                        },
-                        onTaskToggleStatus: (task) async {
-                          await _handleToggleStatus(ref, task);
-                        },
-                        onTaskDelete: (task) async {
-                          final confirmed = await context.showConfirmDialog(
-                            title: AppStrings.confirmDelete,
-                            message: '「${task.title}」を削除しますか？',
-                          );
+                child: _currentIndex == 3
+                    ? (selectedProject != null
+                        ? ProjectSettingsContent(
+                            projectId: selectedProject.id,
+                          )
+                        : Center(
+                            child: Text(
+                              'プロジェクトが選択されていません',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                            ),
+                          ))
+                    : Padding(
+                        padding: const EdgeInsets.only(bottom: AppSizes.spaceSm),
+                        child: Stack(
+                          children: [
+                            TaskBoard(
+                              tasks: filteredTasks,
+                              pageController: _pageController,
+                              onPageChanged: (index) {
+                                setState(() {
+                                  _currentIndex = index;
+                                });
+                              },
+                              onTaskTap: (task) {
+                                context.go('/task/${task.id}');
+                              },
+                              onTaskToggleStatus: (task) async {
+                                await _handleToggleStatus(ref, task);
+                              },
+                              onTaskDelete: (task) async {
+                                final confirmed =
+                                    await context.showConfirmDialog(
+                                  title: AppStrings.confirmDelete,
+                                  message: '「${task.title}」を削除しますか？',
+                                );
 
-                          if (confirmed && context.mounted) {
-                            await _handleDeleteTask(ref, task, context);
-                          }
-                        },
-                      ),
-                      // 作成ボタン（左下）
-                      Positioned(
-                        bottom: 16,
-                        left: 16,
-                        child: FloatingActionButton(
-                          onPressed: () {
-                            TaskCreateModal.show(context, ref);
-                          },
-                          backgroundColor: AppColors.primary,
-                          elevation: 2,
-                          child: const Icon(
-                            Icons.add,
-                            color: Colors.white,
-                            size: 28,
-                          ),
+                                if (confirmed && context.mounted) {
+                                  await _handleDeleteTask(ref, task, context);
+                                }
+                              },
+                            ),
+                            Positioned(
+                              bottom: 16,
+                              left: 16,
+                              child: FloatingActionButton(
+                                heroTag: null,
+                                onPressed: () {
+                                  TaskCreateModal.show(context, ref);
+                                },
+                                backgroundColor: AppColors.primary,
+                                elevation: 2,
+                                child: const Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                  size: 28,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 16,
+                              right: 16,
+                              child: FloatingActionButton(
+                                heroTag: null,
+                                onPressed: () {
+                                  _showSortDialog(context, ref);
+                                },
+                                backgroundColor: AppColors.primary,
+                                elevation: 2,
+                                child: const Icon(
+                                    Icons.sort, color: Colors.white),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      // ソートボタン（右下）
-                      Positioned(
-                        bottom: 16,
-                        right: 16,
-                        child: FloatingActionButton(
-                          onPressed: () {
-                            _showSortDialog(context, ref);
-                          },
-                          backgroundColor: AppColors.primary,
-                          elevation: 2,
-                          child: const Icon(Icons.sort, color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ),
             ],
           ),
@@ -147,7 +167,7 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
   Widget _buildHeader(
     BuildContext context,
     WidgetRef ref,
-    String? projectName,
+    ProjectModel? selectedProject,
     String searchQuery,
   ) {
     final bool searchActive = searchQuery.isNotEmpty;
@@ -207,7 +227,7 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
                     _showSearchDialog(context, ref, searchQuery);
                   },
                   child: Text(
-                    projectName ?? AppStrings.appName,
+                    selectedProject?.name ?? AppStrings.appName,
                     textAlign: TextAlign.center,
                     style:
                         Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -222,24 +242,52 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
                   ),
                 ),
               ),
-              SizedBox(
-                width: 44,
-                height: 44,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 48,
-                    minHeight: 48,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 48,
+                        minHeight: 48,
+                      ),
+                      splashRadius: 24,
+                      onPressed: () {
+                        _showSearchDialog(context, ref, searchQuery);
+                      },
+                      icon:
+                          Icon(searchActive ? Icons.search_off : Icons.search),
+                      color: searchActive
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                    ),
                   ),
-                  splashRadius: 24,
-                  onPressed: () {
-                    _showSearchDialog(context, ref, searchQuery);
-                  },
-                  icon: Icon(searchActive ? Icons.search_off : Icons.search),
-                  color: searchActive
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
-                ),
+                  const SizedBox(width: 4),
+                  SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 48,
+                        minHeight: 48,
+                      ),
+                      splashRadius: 24,
+                      onPressed: () {
+                        _showProjectMenuBottomSheet(
+                          context,
+                          ref,
+                          selectedProject,
+                        );
+                      },
+                      icon: const Icon(Icons.more_vert),
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -288,6 +336,62 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
             child: const Text('検索'),
           ),
         ],
+      ),
+    );
+  }
+
+  /// プロジェクト関連メニュー（設定・メンバー一覧など）を表示
+  void _showProjectMenuBottomSheet(
+    BuildContext context,
+    WidgetRef ref,
+    ProjectModel? selectedProject,
+  ) {
+    if (selectedProject == null) {
+      context.showErrorSnackbar('プロジェクトが選択されていません');
+      return;
+    }
+
+    showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(AppSizes.padding),
+              child: Text(
+                selectedProject.name,
+                style: Theme.of(sheetContext).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Divider(
+              height: 1,
+              color: Theme.of(sheetContext)
+                  .colorScheme
+                  .outline
+                  .withValues(alpha: 0.2),
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.settings,
+                color: Theme.of(sheetContext).colorScheme.primary,
+              ),
+              title: const Text('プロジェクトの設定'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                context.push('/project/${selectedProject.id}/settings');
+              },
+            ),
+            const SizedBox(height: AppSizes.space),
+          ],
+        ),
       ),
     );
   }
@@ -390,11 +494,10 @@ class _TaskBoardScreenState extends ConsumerState<TaskBoardScreen> {
 
   /// ナビゲーションアイテムタップ処理
   void _onNavItemTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
     if (index < 3) {
-      // 未着手、進行中、完了のみ
-      setState(() {
-        _currentIndex = index;
-      });
       _pageController.animateToPage(
         index,
         duration: const Duration(milliseconds: 300),

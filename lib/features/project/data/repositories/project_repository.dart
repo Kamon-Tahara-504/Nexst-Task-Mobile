@@ -71,6 +71,38 @@ class ProjectRepository {
     }
   }
 
+  /// プロジェクトを更新（名前・コード。プロジェクト管理者のみ想定）
+  Future<ProjectModel?> updateProject(
+    String projectId, {
+    String? name,
+    String? code,
+  }) async {
+    try {
+      final updates = <String, dynamic>{};
+      if (name != null) updates['name'] = name;
+      if (code != null) updates['code'] = code;
+      if (updates.isEmpty) return getProjectById(projectId);
+
+      final response = await _supabase
+          .from('project')
+          .update(updates)
+          .eq('id', projectId)
+          .select()
+          .single();
+
+      final project = ProjectModel.fromJson(response);
+      if (kDebugMode) {
+        print('プロジェクト更新成功: ${project.name}');
+      }
+      return project;
+    } catch (e) {
+      if (kDebugMode) {
+        print('プロジェクト更新エラー: $e');
+      }
+      rethrow;
+    }
+  }
+
   /// プロジェクトを作成（管理者のみ）
   Future<ProjectModel> createProject({
     required String name,

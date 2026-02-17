@@ -12,7 +12,9 @@ import '../../features/project/data/models/project_model.dart';
 import '../../features/project/presentation/widgets/project_creation_modal.dart';
 import '../../features/project/data/repositories/project_repository.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
+import '../../features/auth/data/repositories/auth_repository.dart';
 import '../../shared/widgets/loading_indicator.dart';
+import '../../shared/widgets/display_name_dialog.dart';
 import '../../shared/extensions/context_extensions.dart';
 
 /// アプリケーションのDrawer（サイドバー）
@@ -73,6 +75,9 @@ class AppDrawer extends ConsumerWidget {
                 ],
               ),
             ),
+
+            // ログアウト
+            _buildLogoutButton(context, ref),
 
             // フッター
             _buildFooter(context),
@@ -146,73 +151,192 @@ class AppDrawer extends ConsumerWidget {
     );
   }
 
-  /// プロジェクト項目を構築
+  /// プロジェクト項目を構築（Discord風: 1行＋右端メニューボタン）
   Widget _buildProjectItem(
     BuildContext context,
     WidgetRef ref,
     ProjectModel project,
     bool isSelected,
   ) {
-    return Card(
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppSizes.paddingSm,
         vertical: AppSizes.paddingXs,
       ),
-      elevation: isSelected ? 2 : 0,
-      color: isSelected
-          ? Theme.of(context).colorScheme.primaryContainer
-          : Theme.of(context).colorScheme.surface,
-      shape: RoundedRectangleBorder(
+      child: Material(
+        color: isSelected
+            ? colorScheme.primaryContainer
+            : colorScheme.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusMd),
-        side: isSelected
-            ? BorderSide(color: Theme.of(context).colorScheme.primary, width: 2)
-            : BorderSide.none,
+        child: InkWell(
+          onTap: () async {
+            if (isSelected) {
+              requestOpenTaskScreen(ref);
+            } else {
+              await ref
+                  .read(selectedProjectIdProvider.notifier)
+                  .selectProject(project.id);
+            }
+          },
+          borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+              border: isSelected
+                  ? Border(
+                      left: BorderSide(
+                        color: colorScheme.primary,
+                        width: 3,
+                      ),
+                    )
+                  : null,
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.padding,
+              vertical: AppSizes.paddingSm,
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  isSelected ? Icons.check_circle : Icons.folder_outlined,
+                  color: isSelected
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant,
+                  size: 22,
+                ),
+                const SizedBox(width: AppSizes.spaceSm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        project.name,
+                        style: TextStyle(
+                          color: isSelected
+                              ? colorScheme.onPrimaryContainer
+                              : colorScheme.onSurface,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.w600,
+                          fontSize: AppSizes.fontSm,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        project.code,
+                        style: TextStyle(
+                          color: isSelected
+                              ? colorScheme.onPrimaryContainer
+                                  .withValues(alpha: 0.7)
+                              : colorScheme.onSurfaceVariant,
+                          fontSize: AppSizes.fontXs,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.more_vert,
+                    color: isSelected
+                        ? colorScheme.onPrimaryContainer
+                        : colorScheme.onSurfaceVariant,
+                    size: 22,
+                  ),
+                  onPressed: () =>
+                      _showProjectContextMenu(context, ref, project),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
-      child: ListTile(
-        dense: true,
-        leading: Icon(
-          isSelected ? Icons.check_circle : Icons.folder_outlined,
-          color: isSelected
-              ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.onSurfaceVariant,
-          size: 24,
+    );
+  }
+
+  /// プロジェクトのコンテキストメニュー（移動・表示名変更）を表示
+  void _showProjectContextMenu(
+    BuildContext context,
+    WidgetRef ref,
+    ProjectModel project,
+  ) async {
+    if (!context.mounted) return;
+    showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(AppSizes.padding),
+              child: Text(
+                project.name,
+                style: Theme.of(sheetContext).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Divider(
+              height: 1,
+              color: Theme.of(sheetContext)
+                  .colorScheme.outline
+                  .withValues(alpha: 0.2),
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.open_in_new,
+                color: Theme.of(sheetContext).colorScheme.primary,
+              ),
+              title: const Text('プロジェクトに移動'),
+              onTap: () async {
+                Navigator.pop(sheetContext);
+                await ref
+                    .read(selectedProjectIdProvider.notifier)
+                    .selectProject(project.id);
+                if (context.mounted) requestOpenTaskScreen(ref);
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.badge,
+                color: Theme.of(sheetContext).colorScheme.primary,
+              ),
+              title: const Text('表示名を変更'),
+              onTap: () async {
+                Navigator.pop(sheetContext);
+                final user = await ref.read(currentUserProvider.future);
+                if (!context.mounted || user == null) return;
+                DisplayNameDialog.show(
+                  context,
+                  initialName: user.userName,
+                  onSave: (name) async {
+                    final repo = ref.read(authRepositoryProvider);
+                    await repo.updateUserName(user.id, name);
+                    ref.invalidate(currentUserProvider);
+                    if (context.mounted) {
+                      context.showSuccessSnackbar('表示名を変更しました');
+                    }
+                  },
+                );
+              },
+            ),
+            const SizedBox(height: AppSizes.space),
+          ],
         ),
-        title: Text(
-          project.name,
-          style: TextStyle(
-            color: isSelected
-                ? Theme.of(context).colorScheme.onPrimaryContainer
-                : Theme.of(context).colorScheme.onSurface,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-            fontSize: AppSizes.fontSm,
-          ),
-        ),
-        subtitle: Text(
-          'コード: ${project.code}',
-          style: TextStyle(
-            color: isSelected
-                ? Theme.of(
-                    context,
-                  ).colorScheme.onPrimaryContainer.withValues(alpha: 0.7)
-                : Theme.of(context).colorScheme.onSurfaceVariant,
-            fontSize: AppSizes.fontXs,
-          ),
-        ),
-        onTap: () async {
-          if (isSelected) {
-            // すでに選択中のプロジェクトを再タップした場合もタスク画面を開く
-            requestOpenTaskScreen(ref);
-          } else {
-            await ref
-                .read(selectedProjectIdProvider.notifier)
-                .selectProject(project.id);
-          }
-        },
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSizes.padding,
-          vertical: AppSizes.paddingXs,
-        ),
-        minVerticalPadding: AppSizes.paddingXs,
       ),
     );
   }
@@ -462,6 +586,23 @@ class AppDrawer extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  /// ログアウトボタンを構築
+  Widget _buildLogoutButton(BuildContext context, WidgetRef ref) {
+    return _buildMenuItem(
+      context,
+      icon: Icons.logout,
+      title: AppStrings.logout,
+      textColor: AppColors.error,
+      onTap: () async {
+        final logout = ref.read(logoutProvider);
+        await logout();
+        if (context.mounted) {
+          context.go(AppRoutes.login);
+        }
+      },
     );
   }
 

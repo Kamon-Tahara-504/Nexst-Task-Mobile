@@ -204,6 +204,24 @@ class AuthRepository {
     }
   }
 
+  /// ユーザー名を更新（プロジェクト内表示名としても利用）
+  Future<void> updateUserName(String userId, String userName) async {
+    try {
+      await _supabase
+          .from('users')
+          .update({'user_name': userName})
+          .eq('id', userId);
+      if (kDebugMode) {
+        print('ユーザー名更新成功: $userName');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('ユーザー名更新エラー: $e');
+      }
+      rethrow;
+    }
+  }
+
   /// 認証状態の変更を監視
   Stream<AuthState> get authStateChanges {
     return _supabase.auth.onAuthStateChange;

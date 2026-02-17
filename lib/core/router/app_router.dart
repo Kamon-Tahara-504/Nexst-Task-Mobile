@@ -6,6 +6,7 @@ import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/task/presentation/screens/task_detail_screen.dart';
 import '../../features/admin/presentation/screens/admin_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/project/presentation/screens/project_settings_screen.dart';
 
 /// ルート名の定数
 class AppRoutes {
@@ -17,6 +18,7 @@ class AppRoutes {
   static const String taskDetail = '/task/:id';
   static const String admin = '/admin';
   static const String settings = '/settings';
+  static const String projectSettings = '/project/:id/settings';
 }
 
 /// アプリケーション全体のルーティング設定
@@ -123,6 +125,19 @@ class AppRouter {
                 return MaterialPage(
                   key: state.pageKey,
                   child: const SettingsScreen(),
+                );
+              },
+            ),
+
+            // プロジェクト設定画面（管理者用）
+            GoRoute(
+              path: 'project/:id/settings',
+              name: 'projectSettings',
+              pageBuilder: (context, state) {
+                final projectId = state.pathParameters['id']!;
+                return MaterialPage(
+                  key: state.pageKey,
+                  child: ProjectSettingsScreen(projectId: projectId),
                 );
               },
             ),

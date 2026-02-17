@@ -56,7 +56,6 @@ class TaskBottomNavigationBar extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                // 未着手
                 _NavItem(
                   icon: Icons.pause_circle_outline,
                   label: '未着手',
@@ -64,8 +63,6 @@ class TaskBottomNavigationBar extends ConsumerWidget {
                   isSelected: currentIndex == 0,
                   onTap: () => onNavItemTapped(0),
                 ),
-
-                // 進行中
                 _NavItem(
                   icon: Icons.play_circle_outline,
                   label: '進行中',
@@ -73,14 +70,19 @@ class TaskBottomNavigationBar extends ConsumerWidget {
                   isSelected: currentIndex == 1,
                   onTap: () => onNavItemTapped(1),
                 ),
-
-                // 完了
                 _NavItem(
                   icon: Icons.check_circle_outline,
                   label: '完了',
                   index: 2,
                   isSelected: currentIndex == 2,
                   onTap: () => onNavItemTapped(2),
+                ),
+                _NavItem(
+                  icon: Icons.settings,
+                  label: '設定',
+                  index: 3,
+                  isSelected: currentIndex == 3,
+                  onTap: () => onNavItemTapped(3),
                 ),
               ],
             ),

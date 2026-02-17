@@ -96,6 +96,13 @@ final selectedProjectProvider = FutureProvider<ProjectModel?>((ref) async {
   return repository.getProjectById(projectId);
 });
 
+/// 指定IDのプロジェクト詳細（設定画面などで使用）
+final projectByIdProvider =
+    FutureProvider.family<ProjectModel?, String>((ref, projectId) async {
+  final repository = ref.read(projectRepositoryProvider);
+  return repository.getProjectById(projectId);
+});
+
 /// プロジェクトが選択されているか
 final hasSelectedProjectProvider = Provider<bool>((ref) {
   final projectId = ref.watch(selectedProjectIdProvider);
@@ -129,6 +136,26 @@ final projectMembersProvider =
       final repository = ref.read(projectRepositoryProvider);
       return repository.getProjectMembers(projectId);
     });
+
+/// 現在ユーザーが指定プロジェクトでのメンバー情報（役割判定用）
+final currentUserProjectMemberProvider =
+    FutureProvider.family<ProjectMemberModel?, String>((ref, projectId) async {
+  final user = await ref.watch(currentUserProvider.future);
+  if (user == null) return null;
+  final members = await ref.watch(projectMembersProvider(projectId).future);
+  try {
+    return members.firstWhere((m) => m.userId == user.id);
+  } catch (_) {
+    return null;
+  }
+});
+
+/// 指定プロジェクトで現在ユーザーが管理者かどうか
+final isProjectAdminProvider =
+    FutureProvider.family<bool, String>((ref, projectId) async {
+  final member = await ref.watch(currentUserProjectMemberProvider(projectId).future);
+  return member?.role.isAdmin ?? false;
+});
 
 /// プロジェクトメンバーのユーザー情報付きリスト
 final projectMembersWithUserInfoProvider =
